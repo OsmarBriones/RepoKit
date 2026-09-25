@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0 — 2026-09-25
+
+- Defined the workspace testing strategy in `REPO_MODS_METHODOLOGY.md` §8
+  (Tier 1: decoupled unit tests via `dotnet test`, Tier 2: Harmony reflection
+  contract verification, Tier 3: in-game test harness / fast debug triggers).
+- Updated `REPO_MODS_WORKSPACE.md` testing decision and migration status.
+
 ## 1.3.0 — 2026-09-25
 
 - Renamed the repository from `repo-mods-guidance` to `RepoKit`, consistent
