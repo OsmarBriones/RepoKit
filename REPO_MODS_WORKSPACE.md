@@ -50,7 +50,7 @@ REPO_Mods/
 
 ## Migration status
 
-Only `EnemyDrops` and `RepoAPI` have been brought onto this convention so far. `ExtractionPointReward`, `StartWithRandomWeapon`, `TumbleAttackStun`, and `repo_mod_template` still need the same treatment (flatten nesting, `Directory.Build.props`, dedupe against RepoAPI where it's a real duplicate, docs). Follow §10 of `REPO_MODS_METHODOLOGY.md` for the phased plan, and `EnemyDrops/CLAUDE.md` + `EnemyDrops/ARCHITECTURE.md` as the reference example of the target shape (both build and docs).
+`EnemyDrops`, `RepoAPI`, and `repo_mod_template` have been brought onto this convention. `ExtractionPointReward`, `StartWithRandomWeapon`, and `TumbleAttackStun` still need the same treatment (flatten nesting, `Directory.Build.props`, dedupe against RepoAPI where it's a real duplicate, docs). Follow §10 of `REPO_MODS_METHODOLOGY.md` for the phased plan, and `EnemyDrops/CLAUDE.md` + `EnemyDrops/ARCHITECTURE.md` as the reference example of the target shape (both build and docs).
 
 ## Reference material
 
