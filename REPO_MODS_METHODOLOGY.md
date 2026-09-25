@@ -18,7 +18,7 @@ REPO_Mods/
 ├── StartWithRandomWeapon/      (independent git repo)
 ├── RepoAPI/                    (independent git repo — shared library)
 ├── repo_mod_template/          (independent git repo — dotnet new template)
-├── repo-mods-guidance/          (independent git repo — canonical shared guidance)
+├── RepoKit/                     (independent git repo — canonical shared guidance)
 │   ├── REPO_MODS_WORKSPACE.md
 │   ├── REPO_MODS_METHODOLOGY.md
 │   ├── VERSION.md
@@ -155,7 +155,7 @@ This replaces both the unused root `Directory.Repo.props` and the fragile 9-leve
   otherwise being revised.
 - A local context must let a freshly cloned repository be worked on without
   depending on this workspace folder. When the repository is checked out under
-  `REPO_Mods/`, it additionally follows the `repo-mods-guidance` submodule for shared
+  `REPO_Mods/`, it additionally follows the `RepoKit` submodule for shared
   conventions and cross-project coordination.
 - `repo_mod_template` includes these agent entry points so newly generated mods
   start with their own local context.

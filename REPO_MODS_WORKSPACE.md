@@ -27,7 +27,7 @@ REPO_Mods/
 ├── repo_mod_template/          independent git repo — dotnet new template (repo-mod)
 ├── reference/                  not a git repo — decompiled source / extracted assets (read-only)
 ├── sandbox/                    not a git repo — throwaway/experimental code
-├── repo-mods-guidance/          independent git repo — canonical shared guidance
+├── RepoKit/                     independent git repo — canonical shared guidance
 │   ├── REPO_MODS_WORKSPACE.md
 │   ├── REPO_MODS_METHODOLOGY.md
 │   ├── VERSION.md
@@ -77,14 +77,14 @@ Before editing:
 ## Shared-guidance synchronization gate
 
 Every independent repository consumes this guidance through the
-`external/repo-mods-guidance` git submodule. Before the first edit of each
+`external/RepoKit` git submodule. Before the first edit of each
 task, synchronize and read it once:
 
 1. Initialize the submodule if needed with `git submodule update --init --
-   external/repo-mods-guidance`.
-2. Fetch its remote with `git -C external/repo-mods-guidance fetch origin`,
+   external/RepoKit`.
+2. Fetch its remote with `git -C external/RepoKit fetch origin`,
    compare its checked-out revision with `origin/master`, and, if it is newer,
-   update with `git submodule update --remote external/repo-mods-guidance`.
+   update with `git submodule update --remote external/RepoKit`.
 3. When updated, read `VERSION.md`, this document, and
    `REPO_MODS_METHODOLOGY.md`; stage the changed submodule pointer with the
    task's parent-repository changes.
