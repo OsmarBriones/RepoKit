@@ -74,6 +74,24 @@ Before editing:
 3. Define the change's impact scope: one mod, RepoAPI plus its consumers, the
    template plus future mods, or a workspace-wide convention.
 
+## Shared-guidance synchronization gate
+
+Every independent repository consumes this guidance through the
+`external/repo-mods-guidance` git submodule. Before the first edit of each
+task, synchronize and read it once:
+
+1. Initialize the submodule if needed with `git submodule update --init --
+   external/repo-mods-guidance`.
+2. Fetch its remote, compare its checked-out revision with `origin/master`,
+   and update the submodule if a newer revision exists.
+3. When updated, read `VERSION.md`, this document, and
+   `REPO_MODS_METHODOLOGY.md`; stage the changed submodule pointer with the
+   task's parent-repository changes.
+
+Do not repeat the check during the same task unless the task changes this
+guidance repository. The pinned submodule revision makes the task reproducible
+while the once-per-task gate ensures no task starts on known stale guidance.
+
 While editing:
 
 - Treat a change to shared code, build conventions, templates, documentation,
