@@ -167,6 +167,19 @@ All mods and shared libraries follow modern, idiomatic C# conventions. The goal 
   - Mod: `<ModName>`, `<ModName>.Patches`, `<ModName>.Configuration`, `<ModName>.<Domain>`.
   - RepoAPI: `RepoAPI.<Area>` (e.g. `RepoAPI.Items`, `RepoAPI.Game`, `RepoAPI.ModConfig`).
 
+### 6.2.1 Level lifecycle and generation hooks
+
+R.E.P.O. levels are generated procedurally over multiple frames via `LevelGenerator`. Mod authors must choose their lifecycle hooks carefully based on which game objects they depend on:
+
+1. **Scene Load / Frame 0 (`EnemyDirector.Start` Postfix):**
+   - **Timing:** Executes immediately when Unity loads the level scene assets, *before* procedural dungeon rooms or the truck are instantiated.
+   - **Appropriate for:** Resetting in-memory state, per-level drop counters, or refreshing static configurations.
+   - **Do NOT use for:** Interacting with dungeon geometry, truck objects, or searching for `TruckSafetySpawnPoint.instance` (it will be `null`).
+
+2. **Procedural Generation Complete (`RoundDirector.StartRoundLogic` or `SemiFunc.OnLevelGenDone` Postfix):**
+   - **Timing:** Executes once `LevelGenerator.Instance.Generated == true`, after all rooms, the truck, extraction points, and player spawn points are instantiated.
+   - **Appropriate for:** Spawning starting items, placing world objects, anchoring items to `TruckSafetySpawnPoint.instance`, or querying level rooms and player avatars.
+
 ### 6.3 Scoping and encapsulation
 
 - **Default to `internal` or `private`:** Only the BepInEx entry point (`[BepInPlugin]`) must be `public`. All other classes, structs, helpers, and patches inside a mod should be `internal` or `private` to avoid polluting the global Unity assembly namespace.
@@ -216,6 +229,13 @@ All mods and shared libraries follow modern, idiomatic C# conventions. The goal 
   context, methodology, architecture, README, changelog, and local agent
   guidance whenever the change makes any of them inaccurate. See the
   multi-agent completion checklist in `REPO_MODS_WORKSPACE.md`.
+
+### 7.1 Spec-driven development (Spec Kit)
+
+When using Spec Kit for feature development in mod repositories:
+- `.specify/memory/constitution.md` serves as the non-negotiable governing law that binds Spec Kit to `RepoKit` standards (§6 Coding standards, §8 Testing tiers, and host-only authority).
+- Feature-specific documentation resides in `specs/<feature-name>/` (`spec.md`, `plan.md`, `tasks.md`).
+- Repository-level documentation (`ARCHITECTURE.md`, `README.md`, `CHANGELOG.md`) must be kept synchronized with each implemented feature as part of the phase tasks.
 
 ## 8. Testing strategy
 
