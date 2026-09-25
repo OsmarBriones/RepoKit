@@ -82,8 +82,9 @@ task, synchronize and read it once:
 
 1. Initialize the submodule if needed with `git submodule update --init --
    external/repo-mods-guidance`.
-2. Fetch its remote, compare its checked-out revision with `origin/master`,
-   and update the submodule if a newer revision exists.
+2. Fetch its remote with `git -C external/repo-mods-guidance fetch origin`,
+   compare its checked-out revision with `origin/master`, and, if it is newer,
+   update with `git submodule update --remote external/repo-mods-guidance`.
 3. When updated, read `VERSION.md`, this document, and
    `REPO_MODS_METHODOLOGY.md`; stage the changed submodule pointer with the
    task's parent-repository changes.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 — 2026-09-25
+
+- Documented the exact once-per-task synchronization commands.
+
 ## 1.1.0 — 2026-09-25
 
 - Added the mandatory once-per-task shared-guidance synchronization gate.
