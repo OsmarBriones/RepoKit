@@ -20,6 +20,7 @@ Full rationale and the complete convention (folder layout, naming, docs standard
 ```
 REPO_Mods/
 ├── EnemyDrops/                 independent git repo — migrated to the current convention (pilot)
+├── DucksEveryWhere/            independent git repo — generated from template, migrated
 ├── ExtractionPointReward/      independent git repo — not yet migrated
 ├── StartWithRandomWeapon/      independent git repo — not yet migrated
 ├── TumbleAttackStun/           independent git repo — not yet migrated
