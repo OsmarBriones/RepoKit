@@ -31,6 +31,9 @@ REPO_Mods/
 ├── RepoKit/                     independent git repo — canonical shared guidance
 │   ├── REPO_MODS_WORKSPACE.md
 │   ├── REPO_MODS_METHODOLOGY.md
+│   ├── skills/
+│   │   ├── package-mod/        Thunderstore packaging & validation
+│   │   └── generate-thumbnail/ 256x256 icon generation & processing
 │   ├── VERSION.md
 │   └── CHANGELOG.md
 └── AGENTS.md / GEMINI.md / CLAUDE.md
@@ -56,6 +59,19 @@ REPO_Mods/
 ## Reference material
 
 Decompiled game source and extracted assets belong under `reference/` (not yet moved there as of this writing — still at `repo_decompiled_code/` and `repo_assets_extracted/` in the workspace root). Individual mods' `CLAUDE.md` files reference these via `REPO_DECOMPILED` / `REPO_ASSETS` environment variables rather than a fixed path.
+
+## Shared Agent Skills (`RepoKit/skills/`)
+
+RepoKit provides shared skills to automate release packaging and asset preparation across all mods:
+
+1. **`package-mod` (`RepoKit/skills/package-mod/SKILL.md`):**
+   - Validates `manifest.json`, `README.md`, `CHANGELOG.md`, `icon.png` (256x256), and compiled `.dll`.
+   - Packages into a clean Thunderstore-ready archive `dist/<ModName>-<Version>.zip`.
+   - Script: `powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/package-mod/scripts/package-mod.ps1 -ModPath .`
+2. **`generate-thumbnail` (`RepoKit/skills/generate-thumbnail/SKILL.md`):**
+   - Formats or generates high-contrast 256x256 PNG thumbnails matching R.E.P.O.'s dark industrial comic horror aesthetic.
+   - For agents with image tools: formulates prompt for `generate_image` + runs `process-thumbnail.ps1`.
+   - For text-only agents: runs `generate-procedural-icon.ps1` to produce a themed hazard badge.
 
 ## Multi-agent coordination
 

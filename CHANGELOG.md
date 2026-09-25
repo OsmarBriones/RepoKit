@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0 — 2026-09-25
+
+- Added shared agent skills in `skills/`:
+  - `package-mod`: Thunderstore package automation and pre-release validation (`manifest.json`, `icon.png`, `README.md`, `CHANGELOG.md`, `.dll`).
+  - `generate-thumbnail`: 256x256 mod icon generation via multimodal prompt (`generate_image`) or procedural hazard badge script.
+- Documented level lifecycle hooks in `REPO_MODS_METHODOLOGY.md` §6.2.1 (`EnemyDirector.Start` vs `RoundDirector.StartRoundLogic`).
+- Documented Spec Kit development and constitution binding in `REPO_MODS_METHODOLOGY.md` §7.1.
+
 ## 1.5.0 — 2026-09-25
 
 - Defined the workspace modern coding standards in `REPO_MODS_METHODOLOGY.md` §6
