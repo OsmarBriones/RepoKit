@@ -178,16 +178,16 @@ Testing mods for a closed-source, real-time Unity game with multiplayer networki
 - Use reflection tests to verify that every `[HarmonyPatch]` target class, method, and signature actually exists in the referenced game assemblies.
 - Catches breaking game updates instantly during build/test before launching the game.
 
-### Tier 3: In-Game Test Harness & Fast Debug Triggers
-- Real-time action gameplay makes waiting for natural game events (e.g., finding a specific enemy, waiting for extraction point completion) slow and inefficient for manual validation.
-- Implement dev-only hooks, hotkeys (e.g., wrapped in `#if DEBUG` or enabled via config `DebugMode = true`), or simulation triggers:
-  - Triggering artificial enemy death events to test drop tables (`EnemyDrops`).
-  - Forcing extraction point completion events (`ExtractionPointReward`).
-  - Simulating damage collisions (`TumbleAttackStun`).
-- Emit structured log assertions into `BepInEx/LogOutput.log` (e.g., `[TEST PASSED] Drop spawned with ID ...`).
+### Tier 3: In-Game Smoke Testing & Optional Debug Triggers
+- **Default for most mods:** Simple in-game observation. After `PostBuild` deploys the DLL to the r2modman `Debug` profile, launch R.E.P.O. and test the mod during normal gameplay. Most mods do **not** need custom test code or hotkeys.
+- **Optional (opt-in only, disabled by default):** If a mod involves mechanics that are difficult or time-consuming to trigger naturally (e.g. rare enemy encounters, high-level extraction states), developers *may* optionally add debug shortcuts:
+  - Guarded strictly behind debug checks (e.g., `#if DEBUG` or `DebugMode = false` by default in config) so release builds are never polluted.
+  - Can simulate the event (e.g. triggering an artificial enemy death or extraction event) to speed up manual iteration.
+  - Emit structured log messages to `BepInEx/LogOutput.log` to confirm execution.
+- **Rule:** Do not burden new or simple mods with debug hotkeys or test harness boilerplate. Keep mods lean by default.
 
 ### Why full headless E2E is avoided
-- Running `REPO.exe -batchmode -nographics` can bypass rendering, but proprietary game initialization (Steamworks `SteamAPI.Init()` and Photon networking handshakes) makes fully headless CI/CD execution unreliable. Tier 1 + 2 provide automated regression safety, while Tier 3 provides rapid in-game verification.
+- Running `REPO.exe -batchmode -nographics` can bypass rendering, but proprietary game initialization (Steamworks `SteamAPI.Init()` and Photon networking handshakes) makes fully headless CI/CD execution unreliable. Tier 1 + 2 provide automated regression safety, while Tier 3 manual verification is sufficient for in-game behavior.
 
 ## 9. Git hygiene
 
