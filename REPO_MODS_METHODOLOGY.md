@@ -129,11 +129,64 @@ This replaces both the unused root `Directory.Repo.props` and the fragile 9-leve
 
 `PostBuild` keeps copying to the BepInEx `plugins` folder and the r2modman debug profile(s); `PackThunderstore` keeps building the Thunderstore zip — both write to a `dist/`-style folder that stays out of git (see §6).
 
-## 6. Naming conventions
+## 6. Coding standards and conventions
 
-- Patch files: `<TargetType>_<TargetMethod>_Patch.cs` (e.g. `EnemyHealth_Awake_Patch.cs`).
-- Namespaces: `<ModName>`, `<ModName>.Patches`, `<ModName>.Configuration`, `<ModName>.<Domain>`.
-- RepoAPI namespaces: `RepoAPI.<Area>` (e.g. `RepoAPI.Items`, `RepoAPI.Configuration`).
+All mods and shared libraries follow modern, idiomatic C# conventions. The goal is clean, readable code that avoids legacy prefixes and Hungarian notation.
+
+### 6.1 Naming and case rules
+
+- **No Hungarian or scope prefixes:**
+  - **No underscore prefix for private/protected members:** Use `logger`, `config`, `itemTable` (never `_logger`, `_config`).
+  - **No static prefixes:** Use `dropsThisLevel`, `instance`, `defaultDropChance` (never `s_dropsThisLevel`, `sInstance`, or `m_`).
+  - **No type prefixes:** Avoid `strName`, `iCount`, `bEnabled`. Let strong typing do the work.
+- **PascalCase:**
+  - Types: classes, structs, enums, interfaces, records (`EnemyDeathHandler`, `ItemName`).
+  - Methods and local functions (`TrySpawnItem`, `ReloadConfig`).
+  - Properties (`public ConfigFile Config { get; }`, `internal static ManualLogSource Logger { get; }`).
+  - Constants and `public static readonly` values (`DefaultDropRate`).
+  - Namespaces and file names.
+- **camelCase:**
+  - Private and internal instance fields (`dropRate`, `trackedEnemies`).
+  - Private and internal static fields (`dropsThisLevel`, `cachedInstance`).
+  - Method parameters and lambda parameters (`enemyHealth`, `itemKey`).
+  - Local variables (`spawnPosition`, `randomItem`).
+- **Interfaces:** Prefix with `I` (`IItemProvider`, `IConfigProvider`).
+- **Enums:** PascalCase for enum name and elements. Use singular names unless the enum represents bit flags (`ItemName`, `ItemCategory`).
+
+### 6.2 Mod and Harmony patterns
+
+- **Patch files:** One file per patched method: `<TargetType>_<TargetMethod>_Patch.cs` (e.g. `EnemyHealth_Awake_Patch.cs`, `EnemyDirector_Start_Patch.cs`).
+- **Patch methods:** Standard Harmony method names: `Prefix`, `Postfix`, `Transpiler`, `Finalizer`.
+- **Harmony parameters:** Harmony-injected parameters use Harmony's required syntax (`__instance`, `__result`, `__state`, `___field`), but all custom/mod-defined variables and arguments must follow standard `camelCase`.
+- **Early guard clauses:** Check authority and level lifecycle at the top of patches:
+  ```csharp
+  if (!SemiFunc.RunIsLevel()) return;
+  if (!SemiFunc.IsMasterClientOrSingleplayer()) return;
+  ```
+- **Namespaces:**
+  - Mod: `<ModName>`, `<ModName>.Patches`, `<ModName>.Configuration`, `<ModName>.<Domain>`.
+  - RepoAPI: `RepoAPI.<Area>` (e.g. `RepoAPI.Items`, `RepoAPI.Game`, `RepoAPI.ModConfig`).
+
+### 6.3 Scoping and encapsulation
+
+- **Default to `internal` or `private`:** Only the BepInEx entry point (`[BepInPlugin]`) must be `public`. All other classes, structs, helpers, and patches inside a mod should be `internal` or `private` to avoid polluting the global Unity assembly namespace.
+- **Properties over public fields:** Prefer auto-properties with appropriate accessors (`internal static ManualLogSource Logger { get; private set; }`).
+- **RepoAPI code:** Reusable types in `RepoAPI` use `public` so they are accessible when compiled into consuming mod projects.
+
+### 6.4 Modern C# idioms (`net48` + `LangVersion latest`)
+
+- **Nullable reference types (`Nullable enable`):** Declare nullability intent explicitly (`string?`, `Enemy?`). Avoid blanket `!` suppression unless safely assigned in lifecycle (`Awake`).
+- **Expression-bodied members:** Preferred for single-line methods, read-only properties, and simple getters:
+  ```csharp
+  internal bool HasBattery => maxBattery > 0;
+  ```
+- **Pattern matching & modern null checks:** Prefer `is not null`, `is null`, and switch expressions over nested `null` checks and type casts.
+- **Implicit typing (`var`):** Use `var` when the type is obvious from the right-hand side (`var tracker = new EnemyTracker()`); use explicit types when the return type is non-obvious.
+
+### 6.5 Logging
+
+- Always log through BepInEx's `ManualLogSource` (`Logger.LogInfo()`, `LogWarning()`, `LogError()`, `LogDebug()`).
+- Never use `Console.WriteLine` or raw `UnityEngine.Debug.Log`.
 
 ## 7. Documentation standard (mandatory per mod)
 

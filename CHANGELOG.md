@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 — 2026-09-25
+
+- Defined the workspace modern coding standards in `REPO_MODS_METHODOLOGY.md` §6
+  (no `_` or `s_` prefixes, clean PascalCase/camelCase, `internal` scoping by
+  default, modern C# idioms, and BepInEx logging rules).
+- Updated `REPO_MODS_WORKSPACE.md` coordination rules to enforce §6 coding standards.
+
 ## 1.4.0 — 2026-09-25
 
 - Defined the workspace testing strategy in `REPO_MODS_METHODOLOGY.md` §8

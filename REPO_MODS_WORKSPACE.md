@@ -102,6 +102,9 @@ While editing:
 - A generic improvement found in a mod belongs in `RepoAPI` only when it is
   genuinely reusable; preserve mod-specific behavior even if a file has a
   similar name elsewhere.
+- Follow the modern coding standards in `REPO_MODS_METHODOLOGY.md` §6: use clean
+  PascalCase/camelCase, avoid legacy `_` or `s_` prefixes, and scope classes to
+  `internal` by default.
 - RepoAPI changes must be made and committed in its own repository. Update
   every affected consumer's submodule pointer and source includes when that
   consumer is in scope; explicitly report any consumer intentionally deferred.
