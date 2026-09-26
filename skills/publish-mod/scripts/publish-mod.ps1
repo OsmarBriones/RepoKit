@@ -120,10 +120,25 @@ $manifestJson = $manifest | ConvertTo-Json -Depth 5
 [System.IO.File]::WriteAllText($manifestPath, $manifestJson, [System.Text.Encoding]::UTF8)
 
 # Sync .csproj version
-if ($projXml.Project.PropertyGroup.Version -ne $targetVersion) {
-    $projXml.Project.PropertyGroup.Version = $targetVersion
-    $projXml.Save($csproj.FullName)
-    Write-Host "    Updated $($csproj.Name) Version to $targetVersion" -ForegroundColor Gray
+$csprojContent = Get-Content $csproj.FullName -Raw
+if ($csprojContent -match '<Version>(.*?)</Version>') {
+    if ($Matches[1] -ne $targetVersion) {
+        $csprojContent = $csprojContent -replace '<Version>.*?</Version>', "<Version>$targetVersion</Version>"
+        [System.IO.File]::WriteAllText($csproj.FullName, $csprojContent, [System.Text.Encoding]::UTF8)
+        Write-Host "    Updated $($csproj.Name) Version to $targetVersion" -ForegroundColor Gray
+    }
+}
+
+# Sync *Plugin.cs PluginVersion
+$pluginFiles = Get-ChildItem -Path $resolvedPath -Filter "*Plugin.cs" -Recurse -File
+if ($pluginFiles.Count -gt 0) {
+    $pluginFile = $pluginFiles[0]
+    $pluginContent = Get-Content $pluginFile.FullName -Raw
+    if ($pluginContent -match 'PluginVersion\s*=\s*".*?"') {
+        $pluginContent = $pluginContent -replace 'PluginVersion\s*=\s*".*?"', "PluginVersion = `"$targetVersion`""
+        [System.IO.File]::WriteAllText($pluginFile.FullName, $pluginContent, [System.Text.Encoding]::UTF8)
+        Write-Host "    Updated $($pluginFile.Name) PluginVersion to $targetVersion" -ForegroundColor Gray
+    }
 }
 
 Write-Host "    Target Release Version: $targetVersion" -ForegroundColor Cyan
@@ -229,23 +244,64 @@ if (-not [string]::IsNullOrWhiteSpace($localToken)) {
     }
 }
 
+# 7.2 Sync thunderstore.toml
+$tomlPath = Join-Path $resolvedPath "thunderstore.toml"
+$tomlContent = @"
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "OsmarBriones"
+name = "$modName"
+versionNumber = "$targetVersion"
+description = "$($manifest.description)"
+websiteUrl = "$($manifest.website_url)"
+containsNsfwContent = false
+
+[package.dependencies]
+BepInEx-BepInExPack = "5.4.2304"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "./dist"
+
+[[build.copy]]
+source = "./dist/$modName.dll"
+target = ""
+
+[publish]
+repository = "https://thunderstore.io"
+communities = [ "repo" ]
+
+[publish.categories]
+repo = []
+"@
+[System.IO.File]::WriteAllText($tomlPath, $tomlContent, [System.Text.Encoding]::UTF8)
+
 # 8. Push / Local Publish
 if (-not $SkipPush) {
     Write-Host "==> Pushing commits and tag $tagName to GitHub..." -ForegroundColor Cyan
     & git -C $resolvedPath push origin master --tags
     Write-Host "==> SUCCESS: Tag $tagName pushed to GitHub!" -ForegroundColor Green
-    Write-Host "    GitHub Actions will now build and publish to Thunderstore via tcli using THUNDERSTORE_TOKEN." -ForegroundColor Yellow
 } else {
     Write-Host "    [-SkipPush specified] Release prepared and tagged locally." -ForegroundColor Yellow
 }
 
-if ($LocalPublish -or (-not [string]::IsNullOrWhiteSpace($env:THUNDERSTORE_TOKEN)) -or (-not [string]::IsNullOrWhiteSpace($env:TCLI_AUTH_TOKEN))) {
-    Write-Host "==> Attempting direct local publish with tcli..." -ForegroundColor Cyan
+if (-not [string]::IsNullOrWhiteSpace($localToken)) {
+    Write-Host "==> Publishing package to Thunderstore via tcli..." -ForegroundColor Cyan
     $tcliCmd = Get-Command "tcli" -ErrorAction SilentlyContinue
     if ($tcliCmd) {
-        & tcli publish --file $distZip
-        Write-Host "    Direct local publish completed successfully!" -ForegroundColor Green
+        $publishOutput = & tcli publish --file $distZip --token $localToken --config-path $tomlPath 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "==> SUCCESS: Mod $modName v$targetVersion successfully published to Thunderstore!" -ForegroundColor Green
+        } elseif ($publishOutput -match "Package of the same namespace, name and version already exists") {
+            Write-Host "==> UP-TO-DATE: Mod $modName v$targetVersion is ALREADY published on Thunderstore. No changes needed." -ForegroundColor Yellow
+        } else {
+            Write-Host $publishOutput
+            throw "tcli publish failed with exit code $LASTEXITCODE"
+        }
     } else {
-        Write-Warning "tcli command not found locally. Install via 'dotnet tool install -g ThunderstoreCLI'."
+        Write-Warning "tcli command not found locally. Install via 'dotnet tool install -g tcli'."
     }
 }
