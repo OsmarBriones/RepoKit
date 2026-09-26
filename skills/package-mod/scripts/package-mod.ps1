@@ -100,6 +100,29 @@ if (-not $manifestContent.version_number -or $manifestContent.version_number -no
     throw "manifest.json 'version_number' must be valid SemVer (e.g. 1.0.0): '$($manifestContent.version_number)'"
 }
 
+# Auto-detect website_url from git remote origin if missing or placeholder
+if ([string]::IsNullOrWhiteSpace($manifestContent.website_url) -or $manifestContent.website_url -match 'GITHUB_REPO_URL|YOUR_REPO_URL') {
+    $gitRemote = & git -C $resolvedPath config --get remote.origin.url 2>$null
+    if (-not [string]::IsNullOrWhiteSpace($gitRemote)) {
+        $gitRemote = $gitRemote.Trim()
+        if ($gitRemote -match '^git@github\.com:(.+?)(?:\.git)?$') {
+            $gitRemote = "https://github.com/$($Matches[1])"
+        } elseif ($gitRemote -match '^(https?://.+?)(?:\.git)?$') {
+            $gitRemote = $Matches[1]
+        }
+        $manifestContent | Add-Member -NotePropertyName "website_url" -NotePropertyValue $gitRemote -Force
+        
+        # Save back to manifest.json so it is updated permanently on disk
+        $jsonString = $manifestContent | ConvertTo-Json -Depth 5
+        [System.IO.File]::WriteAllText($manifestPath, $jsonString, [System.Text.Encoding]::UTF8)
+        Write-Host "    Auto-populated manifest.json 'website_url' from git origin: $gitRemote" -ForegroundColor Cyan
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($manifestContent.website_url)) {
+    throw "manifest.json missing required 'website_url' field (and could not determine git remote origin URL)."
+}
+
 if ($manifestContent.description.Length -gt 250) {
     throw "manifest.json 'description' exceeds 250 characters (current: $($manifestContent.description.Length))"
 }

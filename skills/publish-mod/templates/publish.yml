@@ -1,0 +1,48 @@
+name: Publish to Thunderstore
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build & Publish to Thunderstore
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install Thunderstore CLI (tcli)
+        run: dotnet tool install -g ThunderstoreCLI
+
+      - name: Package Mod
+        shell: pwsh
+        run: |
+          if (Test-Path "external/RepoKit/skills/package-mod/scripts/package-mod.ps1") {
+            powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/package-mod/scripts/package-mod.ps1 -ModPath . -Configuration Release
+          } else {
+            dotnet build -c Release
+          }
+
+      - name: Publish Package to Thunderstore
+        shell: pwsh
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
+        run: |
+          $zipItem = Get-ChildItem -Path dist/*.zip | Select-Object -First 1
+          if (-not $zipItem) {
+            throw "No packaged .zip file found in dist/ directory to publish!"
+          }
+          Write-Host "Publishing archive: $($zipItem.FullName)"
+          tcli publish --file "$($zipItem.FullName)"

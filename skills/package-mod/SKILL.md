@@ -15,7 +15,7 @@ A valid Thunderstore mod package is a flat `.zip` file containing the following 
 
 File | Requirement | Description
 :--- | :--- | :---
-`manifest.json` | Mandatory | Package metadata (name, version, description <= 250 chars, dependencies).
+`manifest.json` | Mandatory | Package metadata (name, version, website_url, description <= 250 chars, dependencies).
 `icon.png` | Mandatory | Exactly **256x256** pixels, square PNG format, < 256 KB.
 `README.md` | Mandatory | Markdown description of the mod, features, install instructions, and config.
 `<ModName>.dll` | Mandatory | Compiled BepInEx assembly targeting `.NET Framework 4.8`.
@@ -34,6 +34,8 @@ Before building and packaging, ensure the following fields are synchronized:
    - Top entry in `CHANGELOG.md`
 2. **Manifest rules:**
    - `"name"`: Only alphanumeric characters and underscores (`[a-zA-Z0-9_]`). No hyphens or spaces!
+   - `"version_number"`: Valid SemVer (`X.Y.Z`).
+   - `"website_url"`: Mandatory. Link to git repository (e.g. `https://github.com/OsmarBriones/<ModName>`). If omitted, `package-mod.ps1` automatically detects and sets it from the git `origin` remote.
    - `"description"`: Maximum 250 characters.
    - `"dependencies"`: Array of Thunderstore package strings (e.g. `["BepInEx-BepInExPack-5.4.2100"]`).
 3. **Icon requirements:**
