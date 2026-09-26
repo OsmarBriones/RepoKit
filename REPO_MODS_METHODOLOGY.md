@@ -230,7 +230,36 @@ R.E.P.O. levels are generated procedurally over multiple frames via `LevelGenera
   guidance whenever the change makes any of them inaccurate. See the
   multi-agent completion checklist in `REPO_MODS_WORKSPACE.md`.
 
-### 7.1 Spec-driven development (Spec Kit)
+### 7.1 Author vs. Technical Identifier
+
+There is a strict distinction between the developer's human-facing identity and technical reverse-DNS identifiers:
+
+- **Visible Author / Developer Name (`Osmar Briones`):**
+  - Used in Thunderstore-facing documentation (`README.md` Credits: `Developed by **Osmar Briones**`).
+  - Used in project metadata (`<Authors>Osmar Briones</Authors>` in `.csproj`).
+  - Used in Thunderstore upload profiles and packaging author fields.
+- **Technical Author Identifier (`com.osmar`):**
+  - Reverse-DNS prefix reserved **exclusively** for technical, network, and file system identifiers.
+  - Used in BepInEx plugin GUIDs (e.g. `[BepInPlugin("com.osmar.ModName", ...)]`).
+  - Used in generated BepInEx configuration filenames (e.g. `BepInEx/config/com.osmar.ModName.cfg`).
+  - Used in C# namespaces when reverse-DNS scoping is required.
+  - **Never** use `com.osmar` as the human developer name in credits or `<Authors>`.
+
+### 7.2 Audience separation: Player-friendly `README.md` vs. Technical `ARCHITECTURE.md`
+
+Every mod repository maintains documentation tailored to two distinct audiences:
+
+1. **`README.md` (Thunderstore Players):**
+   - **Audience:** Players downloading and installing the mod from Thunderstore or mod managers (r2modman).
+   - **`## Features` Section:** Must be written entirely from the player's perspective, focusing on the gameplay experience, new capabilities, audiovisual effects, and balance changes in clear, accessible language.
+   - **Multiplayer Transparency:** Explain host/client requirements simply (e.g. *"Only the host needs this mod installed — other players see the effects automatically without installing anything"*).
+   - **Strictly Prohibited in `README.md`:** Do **not** leak internal Unity engine terms, hook/patch target names (such as `EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`, `RoundDirector`), Harmony patch signatures, class/method names, or code architecture details. Players care about what happens in the game, not which C# method is patched.
+
+2. **`ARCHITECTURE.md` (Developers & AI Agents):**
+   - **Audience:** Mod developers and AI coding agents.
+   - **Purpose:** Documents the internal mechanics: runtime data flow, Harmony patch targets, lifecycle hooks, network authority checks, and design rationale.
+
+### 7.3 Spec-driven development (Spec Kit)
 
 When using Spec Kit for feature development in mod repositories:
 - `.specify/memory/constitution.md` serves as the non-negotiable governing law that binds Spec Kit to `RepoKit` standards (§6 Coding standards, §8 Testing tiers, and host-only authority).

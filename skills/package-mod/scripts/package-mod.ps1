@@ -51,7 +51,14 @@ if (-not $projVersion) {
     $projVersion = "1.0.0"
 }
 
-Write-Host "    Project: $assemblyName (Version: $projVersion)" -ForegroundColor Gray
+$projAuthors = $projXml.Project.PropertyGroup.Authors | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 1
+if ($projAuthors -eq "com.osmar" -or $projAuthors -match '^com\.') {
+    Write-Warning "<Authors> tag in $($csproj.Name) is set to reverse-DNS ID '$projAuthors'. Developer name should be 'Osmar Briones'."
+} elseif ($projAuthors -eq "AUTHOR_ID" -or $projAuthors -eq "AUTHOR_NAME") {
+    Write-Warning "<Authors> tag in $($csproj.Name) contains unreplaced template placeholder '$projAuthors'. Set it to 'Osmar Briones'."
+}
+
+Write-Host "    Project: $assemblyName (Version: $projVersion, Author: $projAuthors)" -ForegroundColor Gray
 
 # 2. Build if requested
 if (-not $SkipBuild) {
@@ -129,6 +136,14 @@ Write-Host "    icon.png dimensions verified (256x256)." -ForegroundColor Green
 $readmePath = Join-Path $resolvedPath "README.md"
 if (-not (Test-Path $readmePath)) {
     throw "Missing required file: README.md"
+}
+
+$readmeContent = Get-Content $readmePath -Raw
+if ($readmeContent -match 'Developed by \*\*com\.osmar\*\*') {
+    Write-Warning "README.md credits 'com.osmar' instead of 'Osmar Briones'. Reserve 'com.osmar' for technical identifiers."
+}
+if ($readmeContent -match 'AUTHOR_NAME|AUTHOR_ID') {
+    Write-Warning "README.md contains unreplaced template placeholders (AUTHOR_NAME or AUTHOR_ID)."
 }
 
 $changelogPath = Join-Path $resolvedPath "CHANGELOG.md"

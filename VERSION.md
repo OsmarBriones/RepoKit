@@ -1,6 +1,6 @@
 # Guidance version
 
-Current version: **1.6.0**
+Current version: **1.7.0**
 
 Released: 2026-09-25
 

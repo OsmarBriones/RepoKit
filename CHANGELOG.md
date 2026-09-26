@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.7.0 — 2026-09-25
+
+- Formalized distinction between human developer Author name (`Osmar Briones`) and technical reverse-DNS identifier (`com.osmar`) in `REPO_MODS_METHODOLOGY.md` §7.1 and `REPO_MODS_WORKSPACE.md`:
+  - Developer name (`Osmar Briones`): used in `README.md` credits, `<Authors>` tag in `.csproj`, and packaging metadata.
+  - Technical reverse-DNS ID (`com.osmar`): reserved exclusively for BepInEx `PluginGuid`, config file names (`BepInEx/config/com.osmar.<ModName>.cfg`), and code namespaces.
+- Established documentation audience separation in `REPO_MODS_METHODOLOGY.md` §7.2:
+  - `README.md` is Thunderstore player-facing: the `## Features` section must focus purely on player experience and gameplay mechanics in accessible language.
+  - Internal Unity engine terminology, hook/patch targets (`EnemyDirector.Start`, `TruckSafetySpawnPoint`, etc.), and code architecture are strictly forbidden in `README.md` and belong in `ARCHITECTURE.md`.
+- Updated `skills/package-mod` checklist and `package-mod.ps1` script to validate `<Authors>` metadata and warn on `com.osmar` or unreplaced template placeholders in `README.md`.
+
 ## 1.6.0 — 2026-09-25
 
 - Added shared agent skills in `skills/`:

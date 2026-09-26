@@ -38,6 +38,13 @@ Before building and packaging, ensure the following fields are synchronized:
    - `"dependencies"`: Array of Thunderstore package strings (e.g. `["BepInEx-BepInExPack-5.4.2100"]`).
 3. **Icon requirements:**
    - Must be exactly 256x256 pixels. If missing or different size, use the `generate-thumbnail` skill.
+4. **Author metadata alignment:**
+   - `<Authors>` tag in `[ModName].csproj` must be `Osmar Briones`, **not** `com.osmar`.
+   - `README.md` Credits section must state `Developed by **Osmar Briones**`.
+   - Technical prefix `com.osmar` is reserved exclusively for the BepInEx GUID (`PluginGuid`) and config filenames (`com.osmar.[ModName].cfg`).
+5. **Player-facing README (`## Features`):**
+   - The `## Features` section must be written for **players**, describing the gameplay experience, new items/mechanics, and multiplayer host-only sync in plain words.
+   - Must **not** contain internal Unity engine terms, hook/patch target names (`EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`), Harmony patch names, or code architecture details (which belong strictly in `ARCHITECTURE.md`).
 
 ---
 
