@@ -29,6 +29,8 @@
 param(
     [string]$ModPath = ".",
     [string]$Version = "",
+    [ValidateSet("patch", "minor", "major", "")]
+    [string]$Bump = "",
     [switch]$SkipPush,
     [switch]$LocalPublish
 )
@@ -110,10 +112,46 @@ if ([string]::IsNullOrWhiteSpace($manifest.website_url) -or $manifest.website_ur
 
 # Determine target version
 $targetVersion = $manifest.version_number
+
+# Parse current version into SemVer components (Major.Minor.Patch)
+$currentMajor = 1
+$currentMinor = 0
+$currentPatch = 0
+if ($targetVersion -match '^(\d+)\.(\d+)\.(\d+)') {
+    $currentMajor = [int]$Matches[1]
+    $currentMinor = [int]$Matches[2]
+    $currentPatch = [int]$Matches[3]
+}
+
+$nextMajor = $currentMajor + 1
+$nextMinor = $currentMinor + 1
+$nextPatch = $currentPatch + 1
+
 if (-not [string]::IsNullOrWhiteSpace($Version)) {
     $targetVersion = $Version
-    $manifest.version_number = $targetVersion
+} elseif (-not [string]::IsNullOrWhiteSpace($Bump)) {
+    switch ($Bump.ToLower()) {
+        "major" {
+            $targetVersion = "{0}.0.0" -f $nextMajor
+        }
+        "minor" {
+            $targetVersion = "{0}.{1}.0" -f $currentMajor, $nextMinor
+        }
+        "patch" {
+            $targetVersion = "{0}.{1}.{2}" -f $currentMajor, $currentMinor, $nextPatch
+        }
+    }
+} else {
+    # If no Version or Bump provided, check if current version tag already exists in Git
+    $existingTag = & git -C $resolvedPath tag -l "v$targetVersion" 2>$null
+    if (-not [string]::IsNullOrWhiteSpace($existingTag)) {
+        # Current version was already tagged/released, auto-bump patch by default
+        $targetVersion = "{0}.{1}.{2}" -f $currentMajor, $currentMinor, $nextPatch
+        Write-Host "    Current version v$($manifest.version_number) already released; auto-bumping patch to $targetVersion" -ForegroundColor Yellow
+    }
 }
+
+$manifest.version_number = $targetVersion
 
 # Save manifest.json back
 $manifestJson = $manifest | ConvertTo-Json -Depth 5

@@ -264,10 +264,16 @@ Every mod repository maintains documentation tailored to two distinct audiences:
    - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`), prohibiting direct personal developer contact.
    - **Strictly Prohibited in `README.md`:** Do **not** leak internal Unity engine terms, hook/patch target names (such as `EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`, `RoundDirector`), Harmony patch signatures, class/method names, or code architecture details. Players care about what happens in the game, not which C# method is patched.
 
-### 7.3 Release & Versioning Policy (`CHANGELOG.md` & Version Bumps)
+### 7.3 Release & Versioning Policy (`CHANGELOG.md` & SemVer Bumps)
+- **Semantic Versioning Standard (SemVer 2.0.0):** All mods adhere strictly to `MAJOR.MINOR.PATCH` (e.g. `1.0.4`):
+  - **`MAJOR` (x.0.0):** Breaking changes. Incompatible configuration file formats, save-data breakage, major architectural rewrites, or breaking changes in dependencies/game compatibility. Resets MINOR and PATCH to 0 (e.g. `1.2.3` -> `2.0.0`).
+  - **`MINOR` (1.x.0):** New backward-compatible features. Introducing new enemy types, weapons, audiovisual assets, configurable options, or new command systems without breaking existing setups. Resets PATCH to 0 (e.g. `1.0.4` -> `1.1.0`).
+  - **`PATCH` (1.0.x):** Backward-compatible bug fixes and maintenance. Physics adjustments, collision/spawn fixes, performance improvements, documentation/URL adjustments, or minor balance tweaks (e.g. `1.0.4` -> `1.0.5`).
 - **Default Behavior:** Intermediate code updates, feature enhancements, or bug fixes made during routine development MUST NOT automatically bump the mod version number (`.csproj`, `manifest.json`, `PluginVersion`) or create a new released version header in `CHANGELOG.md`.
 - **Unreleased Staging:** Any changelog notes accumulated during ongoing work should be placed under an `## [Unreleased]` section at the top of `CHANGELOG.md`.
-- **Release Trigger:** Bumping version numbers and creating official release entry headers (e.g. `## [1.1.0]`) is performed ONLY when the developer explicitly requests to tag/publish a new release version.
+- **Release Trigger & Automation:** Bumping version numbers and creating official release entry headers (e.g. `## [1.1.0]`) is performed ONLY when the developer explicitly requests to tag/publish a new release version.
+  - When publishing via `publish-mod.ps1` or `/publish`, the release version can be explicitly set (`-Version X.Y.Z`) or bumped (`-Bump major|minor|patch`).
+  - If no argument is passed and the current manifest version is already tagged, the tool defaults to bumping `PATCH` for safety.
 
 2. **`ARCHITECTURE.md` (Developers & AI Agents):**
    - **Audience:** Mod developers and AI coding agents.

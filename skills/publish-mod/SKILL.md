@@ -67,7 +67,8 @@ powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/publish-mod/scr
 
 **Parameters:**
 - `-ModPath`: Target mod root directory (default `.`).
-- `-Version`: Optional explicit version string (e.g. `1.1.0`). If omitted, uses current manifest version.
+- `-Version`: Optional explicit version string (e.g. `1.1.0`). If omitted, uses current manifest version or bumps according to `-Bump`.
+- `-Bump`: Semantic version bump level: `patch` (default when current version is already tagged), `minor` (resets patch to 0), or `major` (resets minor and patch to 0).
 - `-SkipPush`: Prepares release, packages zip, and tags `vX.Y.Z` locally without pushing to GitHub.
 - `-LocalPublish`: Directly executes `tcli publish` on your local machine using `$env:THUNDERSTORE_TOKEN`.
 
