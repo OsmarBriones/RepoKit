@@ -144,11 +144,14 @@ if ($iconItem.Length -gt 256KB) {
     Write-Warning "icon.png exceeds recommended size limit of 256 KB (size: $($iconItem.Length / 1KB) KB)"
 }
 
-Add-Type -AssemblyName System.Drawing
-$img = [System.Drawing.Image]::FromFile($iconPath)
-$width = $img.Width
-$height = $img.Height
-$img.Dispose()
+$bytes = [System.IO.File]::ReadAllBytes($iconPath)
+if ($bytes.Length -lt 24 -or $bytes[0] -ne 0x89 -or $bytes[1] -ne 0x50 -or $bytes[2] -ne 0x4E -or $bytes[3] -ne 0x47) {
+    throw "icon.png is not a valid PNG image."
+}
+$rawWidth = [byte[]]@($bytes[19], $bytes[18], $bytes[17], $bytes[16])
+$rawHeight = [byte[]]@($bytes[23], $bytes[22], $bytes[21], $bytes[20])
+$width = [System.BitConverter]::ToInt32($rawWidth, 0)
+$height = [System.BitConverter]::ToInt32($rawHeight, 0)
 
 if ($width -ne 256 -or $height -ne 256) {
     throw "icon.png MUST be exactly 256x256 pixels. Found: ${width}x${height}."

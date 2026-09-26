@@ -23,26 +23,31 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install Thunderstore CLI (tcli)
-        run: dotnet tool install -g ThunderstoreCLI
-
       - name: Package Mod
         shell: pwsh
         run: |
           if (Test-Path "external/RepoKit/skills/package-mod/scripts/package-mod.ps1") {
-            powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/package-mod/scripts/package-mod.ps1 -ModPath . -Configuration Release
+            & external/RepoKit/skills/package-mod/scripts/package-mod.ps1 -ModPath . -Configuration Release
           } else {
             dotnet build -c Release
           }
 
-      - name: Publish Package to Thunderstore
+      - name: Read Package Metadata
+        id: pkg_info
         shell: pwsh
-        env:
-          TCLI_AUTH_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
         run: |
-          $zipItem = Get-ChildItem -Path dist/*.zip | Select-Object -First 1
-          if (-not $zipItem) {
-            throw "No packaged .zip file found in dist/ directory to publish!"
-          }
-          Write-Host "Publishing archive: $($zipItem.FullName)"
-          tcli publish --file "$($zipItem.FullName)"
+          $manifest = Get-Content manifest.json -Raw | ConvertFrom-Json
+          $zip = (Get-ChildItem -Path dist/*.zip | Select-Object -First 1).FullName
+          "name=$($manifest.name)" >> $env:GITHUB_OUTPUT
+          "version=$($manifest.version_number)" >> $env:GITHUB_OUTPUT
+          "file=$zip" >> $env:GITHUB_OUTPUT
+
+      - name: Publish Package to Thunderstore
+        uses: GreenTF/upload-thunderstore-package@v4.3
+        with:
+          token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          community: repo
+          namespace: OsmarBriones
+          name: ${{ steps.pkg_info.outputs.name }}
+          version: ${{ steps.pkg_info.outputs.version }}
+          file: ${{ steps.pkg_info.outputs.file }}
