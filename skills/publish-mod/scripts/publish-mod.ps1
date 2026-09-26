@@ -143,17 +143,64 @@ if ($pluginFiles.Count -gt 0) {
 
 Write-Host "    Target Release Version: $targetVersion" -ForegroundColor Cyan
 
-# 4. Promote CHANGELOG.md [Unreleased] to Release Version
+# 4. Promote or curate CHANGELOG.md entry for target release version
 $changelogPath = Join-Path $resolvedPath "CHANGELOG.md"
 if (Test-Path $changelogPath) {
     $todayStr = Get-Date -Format "yyyy-MM-dd"
     $changelogContent = Get-Content $changelogPath -Raw
 
-    if ($changelogContent -match '## \[Unreleased\]') {
+    $escapedVersion = [regex]::Escape($targetVersion)
+    $hasVersionEntry = ($changelogContent -match "##\s+\[?$escapedVersion\]?")
+
+    if ($changelogContent -match '##\s+\[?Unreleased\]?') {
         Write-Host "==> Promoting CHANGELOG.md [Unreleased] section to [$targetVersion] - $todayStr..." -ForegroundColor Cyan
-        $changelogContent = $changelogContent -replace '## \[Unreleased\]', "## [$targetVersion] - $todayStr"
+        $changelogContent = $changelogContent -replace '##\s+\[?Unreleased\]?', "## [$targetVersion] - $todayStr"
         [System.IO.File]::WriteAllText($changelogPath, $changelogContent, [System.Text.Encoding]::UTF8)
         Write-Host "    CHANGELOG.md updated successfully." -ForegroundColor Green
+    } elseif (-not $hasVersionEntry) {
+        Write-Host "==> Adding curated player-facing entry for [$targetVersion] in CHANGELOG.md..." -ForegroundColor Cyan
+        
+        # Get recent git commits since last tag to curate player-facing bullets
+        $lastTag = & git -C $resolvedPath describe --tags --abbrev=0 2>$null
+        $commitLog = if ($lastTag) {
+            & git -C $resolvedPath log "$lastTag..HEAD" --pretty=format:"%s" 2>$null
+        } else {
+            & git -C $resolvedPath log -n 5 --pretty=format:"%s" 2>$null
+        }
+
+        $bullets = @()
+        if ($commitLog) {
+            foreach ($line in ($commitLog -split "`r?`n")) {
+                $trimmed = $line.Trim()
+                # Strict filter: ignore internal/CI/CD/build/refactor/submodule/sensitive commits
+                if ($trimmed -match '^(ci|build|chore|test|refactor|submodule|repo_kit|repokit|secrets?|token|workflows?|bump|merge):' -or
+                    $trimmed -match 'github action|submodule|token|secret|workflow|\.github|Directory\.Build|csproj' -or
+                    [string]::IsNullOrWhiteSpace($trimmed)) {
+                    continue
+                }
+                # Clean up commit prefixes like "feat:", "fix:", "docs:"
+                $cleanMsg = $trimmed -replace '^(feat|fix|docs|perf|style)(\(.*?\))?:\s*', ''
+                if ($cleanMsg.Length -gt 1) {
+                    $cleanMsg = $cleanMsg.Substring(0,1).ToUpper() + $cleanMsg.Substring(1)
+                }
+                $bullets += "- $cleanMsg"
+            }
+        }
+
+        if ($bullets.Count -eq 0) {
+            $bullets += "- Maintenance update and gameplay improvements."
+        }
+
+        $newEntry = "`n## [$targetVersion] - $todayStr`n" + ($bullets -join "`n") + "`n"
+
+        if ($changelogContent -match '(?m)^#\s+Changelog\s*$') {
+            $changelogContent = $changelogContent -replace '(?m)(^#\s+Changelog\s*$)', "`$1`n$newEntry"
+        } else {
+            $changelogContent = "# Changelog`n$newEntry`n" + $changelogContent
+        }
+
+        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, [System.Text.Encoding]::UTF8)
+        Write-Host "    CHANGELOG.md updated with curated player-facing notes." -ForegroundColor Green
     }
 }
 
