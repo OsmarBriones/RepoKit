@@ -411,12 +411,25 @@ if (-not $SkipPush) {
     $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
     if ($ghCmd) {
         Write-Host "==> Ensuring GitHub Release $tagName exists with package asset..." -ForegroundColor Cyan
-        $relCheck = & gh release view $tagName --repo "OsmarBriones/$modName" 2>&1
-        if ($LASTEXITCODE -eq 0) {
+        $relExists = $false
+        try {
+            $prevEap = $ErrorActionPreference
+            $ErrorActionPreference = "SilentlyContinue"
+            $null = & gh release view $tagName --repo "OsmarBriones/$modName" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $relExists = $true
+            }
+        } catch {
+            $relExists = $false
+        } finally {
+            $ErrorActionPreference = $prevEap
+        }
+
+        if ($relExists) {
             Write-Host "    GitHub Release $tagName already exists. Updating package asset..." -ForegroundColor Yellow
-            & gh release upload $tagName $packagedZip.FullName --clobber --repo "OsmarBriones/$modName" 2>&1 | Out-Null
+            & gh release upload $tagName $packagedZip.FullName --clobber --repo "OsmarBriones/$modName"
         } else {
-            & gh release create $tagName $packagedZip.FullName --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName" 2>&1 | Out-Null
+            & gh release create $tagName $packagedZip.FullName --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName"
         }
         Write-Host "==> SUCCESS: GitHub Release $tagName verified with package asset attached!" -ForegroundColor Green
         Write-Host "==> GitHub Actions is now publishing $modName $tagName to Thunderstore:" -ForegroundColor Green
