@@ -11,34 +11,21 @@ The goal is to turn an informal idea into an exhaustive, unambiguous specificati
 
 ---
 
-## Cyclical Refinement Loop
+## Adaptive 2-Stage Clarification Loop
 
-Refinement operates as a **cyclical interview loop**. In each iteration, you evaluate what is known versus what is missing, asking targeted questions until **no gaps remain**.
+Rather than overwhelming the user or asking questions that might be invalidated by earlier choices, structure the questioning into **2 focused, sequential micro-rounds**:
 
-```
-    ┌──────────────────────────────────────────────┐
-    │ 1. Parse current concept & analyze gaps      │
-    └──────────────────────┬───────────────────────┘
-                           │
-                           ▼
-    ┌──────────────────────────────────────────────┐
-    │ 2. Ask 2-4 focused questions with options    │ <─── Cycle continues until
-    └──────────────────────┬───────────────────────┘      user is satisfied and
-                           │                              no ambiguities exist
-                           ▼
-    ┌──────────────────────────────────────────────┐
-    │ 3. Integrate user answers & check edge cases │
-    └──────────────────────┬───────────────────────┘
-                           │
-               [Are there remaining gaps?]
-                 ├── YES ──> Loop back to Step 2
-                 └── NO
-                           │
-                           ▼
-    ┌──────────────────────────────────────────────┐
-    │ 4. Emit finalized Mod Concept Specification  │
-    └──────────────────────────────────────────────┘
-```
+### Round 1: Core Premise & Trigger Action (The "HOW")
+Focus strictly on the core player interaction and trigger condition:
+- What exact action does the player perform? (e.g., weapon attack, holding a monster/grab interaction, proximity, on-death trigger?)
+- Proposed 2-3 **PascalCase** mod names matching that specific interaction.
+*Wait for the user's response before designing specific values or configurations.*
+
+### Round 2: Tuning, Networking & Game Feel (The "DETAILS")
+Once the core trigger is locked down:
+- **Math / Cadence:** Exact calculation (e.g. 10% per tick vs fixed HP) and caps (overheal allowed or strictly capped at 100 HP).
+- **Networking:** Confirm Host-Only status (`"Only Host, clients don't need it."`).
+- **Config & Audio/Visuals:** Tunable settings in `com.osmar.<ModName>.cfg` and native/custom sound/visual effects.
 
 ---
 

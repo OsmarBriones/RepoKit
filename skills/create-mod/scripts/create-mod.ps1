@@ -145,19 +145,20 @@ if (Test-Path $readmePath) {
 Write-Host "==> Initializing Git repository on master branch..." -ForegroundColor Cyan
 & git -C $targetPath init -b master | Out-Null
 & git -C $targetPath config core.autocrlf true | Out-Null
+& git -C $targetPath config core.safecrlf false | Out-Null
 
 # 8. Add Submodules (RepoAPI and RepoKit)
 Write-Host "==> Adding git submodules (RepoAPI and RepoKit)..." -ForegroundColor Cyan
 $repoApiUrl = "https://github.com/OsmarBriones/RepoAPI.git"
 $repoKitUrl = "https://github.com/OsmarBriones/RepoKit.git"
 
-& git -C $targetPath submodule add $repoApiUrl external/RepoAPI | Out-Null
-& git -C $targetPath submodule add $repoKitUrl external/RepoKit | Out-Null
+& git -C $targetPath -c core.safecrlf=false submodule add $repoApiUrl external/RepoAPI 2>$null | Out-Null
+& git -C $targetPath -c core.safecrlf=false submodule add $repoKitUrl external/RepoKit 2>$null | Out-Null
 
 # 9. Initial Commit
 Write-Host "==> Creating initial git commit..." -ForegroundColor Cyan
 & git -C $targetPath add .
-& git -C $targetPath commit -m "feat: initial mod structure from repo-mod template" | Out-Null
+& git -C $targetPath commit -m "feat: initial mod structure from repo-mod template" -q | Out-Null
 
 # 10. Public GitHub Repository Creation & Secret Provisioning
 if (-not $SkipGitHub) {
@@ -165,10 +166,13 @@ if (-not $SkipGitHub) {
     if ($ghCmd) {
         Write-Host "==> Creating public GitHub repository OsmarBriones/$ModName..." -ForegroundColor Cyan
         try {
-            & gh repo create "OsmarBriones/$ModName" --public --source="$targetPath" --remote=origin --push
-            Write-Host "    Repository created at: https://github.com/OsmarBriones/$ModName" -ForegroundColor Green
+            # Create remote repo without direct --push to prevent OAuth workflow scope collisions
+            & gh repo create "OsmarBriones/$ModName" --public 2>$null | Out-Null
+            & git -C $targetPath remote add origin "https://github.com/OsmarBriones/$ModName.git" 2>$null | Out-Null
+            & git -C $targetPath push -u origin master -q 2>$null | Out-Null
+            Write-Host "    Repository created and pushed at: https://github.com/OsmarBriones/$ModName" -ForegroundColor Green
         } catch {
-            Write-Warning "Could not create GitHub repo: $_"
+            Write-Warning "Could not create or push to GitHub repo: $_"
         }
 
         # Provision THUNDERSTORE_TOKEN secret if set
@@ -208,15 +212,65 @@ if (-not $SkipSpecKit) {
 
         & powershell -ExecutionPolicy Bypass -File $specScript "$effectiveFeatureDesc" -ShortName "$effectiveShortName"
 
-        # If custom markdown specification provided, write it into the created spec.md
-        if (-not [string]::IsNullOrWhiteSpace($SpecMarkdownContent)) {
-            $specsDir = Join-Path $targetPath "specs"
-            $matchingSpecDir = Get-ChildItem -Path $specsDir -Directory | Where-Object { $_.Name -like "*-$effectiveShortName" } | Select-Object -First 1
-            if ($matchingSpecDir) {
-                $targetSpecFile = Join-Path $matchingSpecDir.FullName "spec.md"
-                [System.IO.File]::WriteAllText($targetSpecFile, $SpecMarkdownContent, (New-Object System.Text.UTF8Encoding($false)))
-                Write-Host "    Updated spec.md with refined concept specification." -ForegroundColor Green
-            }
+        # Ensure spec.md is populated with actual content (not raw placeholders)
+        if ([string]::IsNullOrWhiteSpace($SpecMarkdownContent)) {
+            $SpecMarkdownContent = @"
+# Feature Specification: $ModName Core Mechanics
+
+**Feature Branch**: `001-$effectiveShortName`
+
+**Created**: $(Get-Date -Format 'yyyy-MM-dd')
+
+**Status**: Draft
+
+**Input**: User description: "$effectiveFeatureDesc"
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 - Core Gameplay Mechanic (Priority: P1)
+
+As a player, I want $effectiveFeatureDesc, so that the gameplay experience is enhanced.
+
+**Why this priority**: Essential functionality for $ModName.
+
+**Independent Test**: Verify the feature works during level gameplay.
+
+**Acceptance Scenarios**:
+
+1. **Given** default configuration, **When** the player triggers the mechanic, **Then** the expected effect occurs smoothly.
+
+---
+
+### User Story 2 - Configuration Tuning (Priority: P2)
+
+As a player or server host, I want to configure the mod settings via BepInEx config, so that I can customize balance.
+
+**Why this priority**: Supports player preference and difficulty adjustment.
+
+**Independent Test**: Change settings in config and verify they take effect in-game.
+
+**Acceptance Scenarios**:
+
+1. **Given** custom configuration values, **When** the game loads, **Then** the mod applies the configured values.
+
+## Functional Requirements
+
+- **FR-001**: The mod MUST be configurable via BepInEx configuration.
+- **FR-002**: Core gameplay mechanics MUST execute cleanly and log errors gracefully.
+
+## Success Criteria
+
+1. Feature executes in-game without null references or performance drops.
+2. Settings persist and reload correctly from config file.
+"@
+        }
+
+        $specsDir = Join-Path $targetPath "specs"
+        $matchingSpecDir = Get-ChildItem -Path $specsDir -Directory | Where-Object { $_.Name -like "*-$effectiveShortName" } | Select-Object -First 1
+        if ($matchingSpecDir) {
+            $targetSpecFile = Join-Path $matchingSpecDir.FullName "spec.md"
+            [System.IO.File]::WriteAllText($targetSpecFile, $SpecMarkdownContent, (New-Object System.Text.UTF8Encoding($false)))
+            Write-Host "    Populated spec.md with specification." -ForegroundColor Green
         }
     }
 }
@@ -239,10 +293,10 @@ Write-Host "==> Finalizing git state..." -ForegroundColor Cyan
 & git -C $targetPath add .
 $statusOutput = & git -C $targetPath status --porcelain
 if (-not [string]::IsNullOrWhiteSpace($statusOutput)) {
-    & git -C $targetPath commit -m "docs(spec): initialize spec-kit feature for $ModName" | Out-Null
+    & git -C $targetPath commit -m "docs(spec): initialize spec-kit feature for $ModName" -q | Out-Null
     if (-not $SkipGitHub) {
         try {
-            & git -C $targetPath push origin master 2>$null | Out-Null
+            & git -C $targetPath push origin master -q 2>$null | Out-Null
             Write-Host "    Pushed Spec-Kit initialization to GitHub." -ForegroundColor Green
         } catch {
             Write-Warning "Could not push to remote: $_"
