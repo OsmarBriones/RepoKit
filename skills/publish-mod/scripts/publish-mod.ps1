@@ -82,7 +82,8 @@ if ($needIconGen) {
     }
 
     if (Test-Path $proceduralScript) {
-        & powershell -ExecutionPolicy Bypass -File $proceduralScript -ModName $modName -OutputPath $iconPath
+        $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
+        & $ps -ExecutionPolicy Bypass -File $proceduralScript -ModName $modName -OutputPath $iconPath
         Write-Host "    Icon generated successfully." -ForegroundColor Green
     } else {
         Write-Warning "Could not locate generate-procedural-icon.ps1. Please ensure 256x256 icon.png exists."
@@ -272,7 +273,8 @@ if (-not (Test-Path $packageScript)) {
 }
 
 if (Test-Path $packageScript) {
-    & powershell -ExecutionPolicy Bypass -File $packageScript -ModPath $resolvedPath -Configuration Release
+    $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
+    & $ps -ExecutionPolicy Bypass -File $packageScript -ModPath $resolvedPath -Configuration Release
 } else {
     & dotnet build $csproj.FullName -c Release
 }
