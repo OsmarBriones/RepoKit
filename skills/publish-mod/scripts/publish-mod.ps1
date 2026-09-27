@@ -251,19 +251,88 @@ if (-not (Test-Path $githubDir)) {
 }
 
 $workflowPath = Join-Path $githubDir "publish.yml"
-if (-not (Test-Path $workflowPath)) {
-    Write-Host "==> Adding GitHub Actions publish.yml workflow..." -ForegroundColor Cyan
-    $templatePath = Join-Path $resolvedPath "external/RepoKit/skills/publish-mod/templates/publish.yml"
-    if (-not (Test-Path $templatePath)) {
-        $templatePath = Join-Path $resolvedPath "../RepoKit/skills/publish-mod/templates/publish.yml"
+$templatePath = Join-Path $resolvedPath "external/RepoKit/skills/publish-mod/templates/publish.yml"
+if (-not (Test-Path $templatePath)) {
+    $templatePath = Join-Path $resolvedPath "../RepoKit/skills/publish-mod/templates/publish.yml"
+}
+
+if (Test-Path $templatePath) {
+    $needsUpdate = $false
+    if (-not (Test-Path $workflowPath)) {
+        $needsUpdate = $true
+    } else {
+        $currentWorkflow = Get-Content $workflowPath -Raw
+        if ($currentWorkflow -notmatch "categories:") {
+            $needsUpdate = $true
+        }
+    }
+    if ($needsUpdate) {
+        Copy-Item -Path $templatePath -Destination $workflowPath -Force
+        Write-Host "    Synced .github/workflows/publish.yml with latest template (including categories support)." -ForegroundColor Green
+    }
+}
+
+# 5.1 Thunderstore Category Inference and Sync (categories.txt)
+$validCategories = @(
+    "quality-of-life", "ai-generated", "cosmetics", "serverside", "clientside",
+    "levels", "monsters", "drones", "weapons", "upgrades", "items", "valuables",
+    "audio", "misc", "libraries", "tools", "modpacks", "mods"
+)
+$categoriesFile = Join-Path $resolvedPath "categories.txt"
+$categories = [System.Collections.Generic.List[string]]::new()
+
+if (Test-Path $categoriesFile) {
+    Get-Content $categoriesFile | ForEach-Object {
+        $c = $_.Trim().ToLowerInvariant()
+        if (-not [string]::IsNullOrWhiteSpace($c) -and $validCategories -contains $c -and -not $categories.Contains($c)) {
+            $categories.Add($c)
+        }
+    }
+}
+
+if ($categories.Count -eq 0) {
+    Write-Host "==> Inferring Thunderstore categories for $modName..." -ForegroundColor Cyan
+    $categories.Add("mods")
+
+    $allCsFiles = Get-ChildItem -Path $resolvedPath -Filter "*.cs" -Recurse | Where-Object { $_.FullName -notmatch '[\\/](obj|bin|dist)[\\/]' }
+    $codeText = ($allCsFiles | Get-Content -Raw) -join "`n"
+    $archPath = Join-Path $resolvedPath "ARCHITECTURE.md"
+    $archText = if (Test-Path $archPath) { Get-Content $archPath -Raw } else { "" }
+    $readmeText = if (Test-Path $readmePath) { Get-Content $readmePath -Raw } else { "" }
+    $context = "$codeText`n$archText`n$readmeText`n$($manifest.description)"
+
+    if ($context -match '(?i)(monster|enemy|trudge|gnome|headman|centipede|EnemyDirector|EnemyParent|HealthDamage)') {
+        if (-not $categories.Contains("monsters")) { $categories.Add("monsters") }
+    }
+    if ($context -match '(?i)(server-side|serverside|host-only|host only|only the host|SemiFunc\.IsMasterClientOrSingleplayer)') {
+        if (-not $categories.Contains("serverside")) { $categories.Add("serverside") }
+    } elseif ($context -match '(?i)(client-side|clientside|client only|client-only|purely visual|hud only)') {
+        if (-not $categories.Contains("clientside")) { $categories.Add("clientside") }
+    }
+    if ($context -match '(?i)(ai[- ]generated|dall-e|midjourney|chatgpt|claude|gemini|antigravity)') {
+        if (-not $categories.Contains("ai-generated")) { $categories.Add("ai-generated") }
+    }
+    if ($context -match '(?i)(\bweapon\b|\bweapons\b|\bgun\b|\bguns\b)') {
+        if (-not $categories.Contains("weapons")) { $categories.Add("weapons") }
+    }
+    if ($context -match '(?i)(\bitem\b|\bitems\b)') {
+        if (-not $categories.Contains("items")) { $categories.Add("items") }
+    }
+    if ($context -match '(?i)(\bupgrade\b|\bupgrades\b)') {
+        if (-not $categories.Contains("upgrades")) { $categories.Add("upgrades") }
+    }
+    if ($context -match '(?i)(\baudio\b|\bsound\b|\bmusic\b|\bvoice\b)') {
+        if (-not $categories.Contains("audio")) { $categories.Add("audio") }
+    }
+    if ($context -match '(?i)(quality[- ]of[- ]life|\bqol\b)') {
+        if (-not $categories.Contains("quality-of-life")) { $categories.Add("quality-of-life") }
     }
 
-    if (Test-Path $templatePath) {
-        Copy-Item -Path $templatePath -Destination $workflowPath -Force
-        Write-Host "    Created .github/workflows/publish.yml" -ForegroundColor Green
-    } else {
-        Write-Warning "Could not find publish.yml template to copy to .github/workflows/publish.yml"
-    }
+    $catContent = ($categories -join "`n") + "`n"
+    [System.IO.File]::WriteAllText($categoriesFile, $catContent, $utf8NoBom)
+    Write-Host "    Inferred categories saved to categories.txt: $($categories -join ', ')" -ForegroundColor Green
+} else {
+    Write-Host "==> Using verified categories from categories.txt: $($categories -join ', ')" -ForegroundColor Green
 }
 
 # 6. Run Packaging Script
@@ -370,6 +439,7 @@ if ($LocalPublish) {
                 New-Item -ItemType Directory -Path $distDir -Force | Out-Null
             }
             $tomlPath = Join-Path $distDir "thunderstore.toml"
+            $categoriesArrayJson = "[" + (($categories | ForEach-Object { "`"$_`"" }) -join ", ") + "]"
             try {
                 $tomlContent = @"
 [config]
@@ -391,7 +461,7 @@ repository = "https://thunderstore.io"
 communities = [ "repo" ]
 
 [publish.categories]
-repo = []
+repo = $categoriesArrayJson
 "@
                 [System.IO.File]::WriteAllText($tomlPath, $tomlContent, $utf8NoBom)
 

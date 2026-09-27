@@ -49,7 +49,10 @@ Before publishing via GitHub Actions for the first time, add your **Thunderstore
 4. **Version Synchronization:**
    - Synchronizes version number across `<Version>` in `.csproj`, `version_number` in `manifest.json`, and `PluginVersion` in `[ModName]Plugin.cs`.
 5. **GitHub Workflow Injection:**
-   - Ensures `.github/workflows/publish.yml` is present in the mod repository.
+   - Ensures `.github/workflows/publish.yml` is present in the mod repository and up to date.
+6. **Thunderstore Category Inference & Synchronization (`categories.txt`):**
+   - Automatically detects relevant Thunderstore category slugs (`mods`, `monsters`, `serverside`, `clientside`, `ai-generated`, `quality-of-life`, `weapons`, `items`, etc.) by analyzing code, architecture, and assets.
+   - Saves them to `categories.txt` for transparent source control and passes them to GitHub Actions / `tcli` during publishing.
 
 ---
 

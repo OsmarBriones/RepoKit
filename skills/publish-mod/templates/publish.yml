@@ -47,9 +47,18 @@ jobs:
         run: |
           $manifest = Get-Content manifest.json -Raw | ConvertFrom-Json
           $zip = (Get-ChildItem -Path dist/*.zip | Select-Object -First 1).FullName
+          $categories = "mods"
+          if (Test-Path categories.txt) {
+            $catLines = Get-Content categories.txt | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim().ToLowerInvariant() }
+            if ($catLines.Count -gt 0) {
+              $categories = ($catLines -join ",")
+            }
+          }
+          Write-Host "Publishing with categories: $categories"
           "name=$($manifest.name)" >> $env:GITHUB_OUTPUT
           "version=$($manifest.version_number)" >> $env:GITHUB_OUTPUT
           "file=$zip" >> $env:GITHUB_OUTPUT
+          "categories=$categories" >> $env:GITHUB_OUTPUT
 
       - name: Publish Package to Thunderstore
         id: ts_publish
@@ -62,6 +71,7 @@ jobs:
           name: ${{ steps.pkg_info.outputs.name }}
           version: ${{ steps.pkg_info.outputs.version }}
           file: ${{ steps.pkg_info.outputs.file }}
+          categories: ${{ steps.pkg_info.outputs.categories }}
 
       - name: Verify Publication Status
         shell: pwsh
