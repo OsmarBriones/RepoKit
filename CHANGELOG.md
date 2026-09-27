@@ -20,7 +20,10 @@
 - Implemented automatic Thunderstore category inference and synchronization (`categories.txt`):
   - Automatically deduces community category slugs (`mods`, `monsters`, `serverside`, `clientside`, `ai-generated`, `quality-of-life`, etc.) based on mod code, architecture, and asset analysis.
   - Passes categories to `GreenTF/upload-thunderstore-package` in `publish.yml` and injects them into `thunderstore.toml` for `-LocalPublish`, eliminating manual category editing on Thunderstore.
-- Added root workspace skill entry points under `.agents/skills/create-mod/`, `.agents/skills/refine-mod-concept/`, and `.agents/skills/develop-mod/`.
+- Added `clean-mod` skill (`RepoKit/skills/clean-mod/SKILL.md`) and automation script `clean-mod.ps1`:
+  - Removes compiled mod deployment copies (`.dll`, `.pdb`, folders, and optional `.cfg` configs) from Steam and/or r2modman game directories.
+  - Supports configurable targeting via `-Target All` (default), `-Target Steam`, or `-Target R2` (with `-Profile <Name>|All`).
+- Added root workspace skill entry points under `.agents/skills/create-mod/`, `.agents/skills/refine-mod-concept/`, `.agents/skills/develop-mod/`, and `.agents/skills/clean-mod/`.
 
 ## 1.7.0 — 2026-09-25
 

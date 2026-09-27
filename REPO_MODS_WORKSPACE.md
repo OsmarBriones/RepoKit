@@ -101,6 +101,10 @@ RepoKit provides shared skills to automate release packaging and asset preparati
    - Autonomously executes the full mod development cycle using Spec-Kit.
    - Performs technical planning (`plan.md`), task breakdown (`tasks.md`), C# domain and Harmony patch coding, iterative `dotnet build` verification, and documentation synchronization (`ARCHITECTURE.md`, `README.md`).
    - Carries 100% of the technical workload, only consulting the human developer for critical gameplay/design decisions or irreconcilable blockers.
+7. **`clean-mod` (`RepoKit/skills/clean-mod/SKILL.md`):**
+   - Cleans deployed mod assemblies (`<ModName>.dll`, `.pdb`, folders, and optional configs) from Steam and/or r2modman game installations to test clean vanilla states or version switches.
+   - Configurable target: `-Target All` (default), `-Target Steam`, or `-Target R2` (supports `-Profile <Name>|All`).
+   - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/clean-mod/scripts/clean-mod.ps1 [-ModName <ModName>] [-Target All|Steam|R2]`
 
 ## Multi-agent coordination
 
