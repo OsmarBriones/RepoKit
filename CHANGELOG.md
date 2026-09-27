@@ -16,6 +16,7 @@
   - Required graceful degradation for optional tools and environment tokens.
 - Fixed UTF-8 BOM emission in `publish-mod.ps1` and `package-mod.ps1` by enforcing `[System.Text.UTF8Encoding]::new($false)` to prevent Thunderstore HTTP 400 rejection on `CHANGELOG.md` and `manifest.json`.
 - Architected GitHub Actions release bridge in `publish.yml` and `publish-mod.ps1`: locally packages verified mod zip with game assemblies, creates GitHub Release, and delegates cloud Thunderstore publishing to GitHub Actions via release asset download.
+- Improved working tree hygiene in `publish-mod.ps1` by generating `thunderstore.toml` strictly inside `dist/` only during `-LocalPublish`, wrapped in a guaranteed `try ... finally` cleanup block, and adding `thunderstore.toml` to `.gitignore` templates to prevent untracked artifacts.
 - Added root workspace skill entry points under `.agents/skills/create-mod/`, `.agents/skills/refine-mod-concept/`, and `.agents/skills/develop-mod/`.
 
 ## 1.7.0 — 2026-09-25

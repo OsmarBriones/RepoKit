@@ -332,41 +332,6 @@ if (-not [string]::IsNullOrWhiteSpace($localToken)) {
     }
 }
 
-# 7.2 Sync thunderstore.toml
-$tomlPath = Join-Path $resolvedPath "thunderstore.toml"
-$tomlContent = @"
-[config]
-schemaVersion = "0.0.1"
-
-[package]
-namespace = "OsmarBriones"
-name = "$modName"
-versionNumber = "$targetVersion"
-description = "$($manifest.description)"
-websiteUrl = "$($manifest.website_url)"
-containsNsfwContent = false
-
-[package.dependencies]
-BepInEx-BepInExPack = "5.4.2304"
-
-[build]
-icon = "./icon.png"
-readme = "./README.md"
-outdir = "./dist"
-
-[[build.copy]]
-source = "./dist/$modName.dll"
-target = ""
-
-[publish]
-repository = "https://thunderstore.io"
-communities = [ "repo" ]
-
-[publish.categories]
-repo = []
-"@
-[System.IO.File]::WriteAllText($tomlPath, $tomlContent, $utf8NoBom)
-
 # 8. Push Commits, Tags, and Create GitHub Release
 if (-not $SkipPush) {
     Write-Host "==> Pushing commits and tag $tagName to GitHub..." -ForegroundColor Cyan
@@ -400,14 +365,49 @@ if ($LocalPublish) {
         Write-Host "==> [-LocalPublish specified] Publishing package directly to Thunderstore via tcli..." -ForegroundColor Cyan
         $tcliCmd = Get-Command "tcli" -ErrorAction SilentlyContinue
         if ($tcliCmd) {
-            $publishOutput = & tcli publish --file $distZip --token $localToken --config-path $tomlPath 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                Write-Host "==> SUCCESS: Mod $modName v$targetVersion successfully published to Thunderstore!" -ForegroundColor Green
-            } elseif ($publishOutput -match "Package of the same namespace, name and version already exists") {
-                Write-Host "==> UP-TO-DATE: Mod $modName v$targetVersion is ALREADY published on Thunderstore. No changes needed." -ForegroundColor Yellow
-            } else {
-                Write-Host $publishOutput
-                throw "tcli publish failed with exit code $LASTEXITCODE"
+            $distDir = Join-Path $resolvedPath "dist"
+            if (-not (Test-Path $distDir)) {
+                New-Item -ItemType Directory -Path $distDir -Force | Out-Null
+            }
+            $tomlPath = Join-Path $distDir "thunderstore.toml"
+            try {
+                $tomlContent = @"
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "OsmarBriones"
+name = "$modName"
+versionNumber = "$targetVersion"
+description = "$($manifest.description)"
+websiteUrl = "$($manifest.website_url)"
+containsNsfwContent = false
+
+[package.dependencies]
+BepInEx-BepInExPack = "5.4.2304"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = [ "repo" ]
+
+[publish.categories]
+repo = []
+"@
+                [System.IO.File]::WriteAllText($tomlPath, $tomlContent, $utf8NoBom)
+
+                $publishOutput = & tcli publish --file $distZip --token $localToken --config-path $tomlPath 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "==> SUCCESS: Mod $modName v$targetVersion successfully published to Thunderstore!" -ForegroundColor Green
+                } elseif ($publishOutput -match "Package of the same namespace, name and version already exists") {
+                    Write-Host "==> UP-TO-DATE: Mod $modName v$targetVersion is ALREADY published on Thunderstore. No changes needed." -ForegroundColor Yellow
+                } else {
+                    Write-Host $publishOutput
+                    throw "tcli publish failed with exit code $LASTEXITCODE"
+                }
+            } finally {
+                if (Test-Path $tomlPath) {
+                    Remove-Item $tomlPath -Force -ErrorAction SilentlyContinue
+                }
             }
         } else {
             Write-Warning "tcli command not found locally. Install via 'dotnet tool install -g tcli'."
@@ -415,9 +415,4 @@ if ($LocalPublish) {
     } else {
         Write-Warning "Cannot perform local publish: THUNDERSTORE_TOKEN not found."
     }
-}
-
-# 10. Clean up temporary thunderstore.toml
-if (Test-Path $tomlPath) {
-    Remove-Item $tomlPath -Force -ErrorAction SilentlyContinue
 }
