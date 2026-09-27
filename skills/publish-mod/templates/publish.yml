@@ -66,6 +66,7 @@ jobs:
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
           token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          repo: https://thunderstore.io
           community: repo
           namespace: OsmarBriones
           name: ${{ steps.pkg_info.outputs.name }}
