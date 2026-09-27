@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+- Added `refine-mod-concept` skill (`RepoKit/skills/refine-mod-concept/SKILL.md`):
+  - Cyclical Q&A clarification loop to refine raw mod ideas into unambiguous specifications (gameplay, networking, config, audio/visual feel, edge cases, naming).
+- Added `create-mod` skill (`RepoKit/skills/create-mod/SKILL.md`) and automation script `create-mod.ps1`:
+  - Scaffolds mod from `repo_mod_template` with `dotnet new repo-mod`.
+  - Automatically initializes Git (`master`), links `RepoAPI` and `RepoKit` git submodules, and creates public GitHub repository with `THUNDERSTORE_TOKEN` secret.
+  - Automatically prepares Spec-Kit feature directory (`specs/001-...`) and verifies build compilation.
+- Added root workspace skill entry points under `.agents/skills/create-mod/` and `.agents/skills/refine-mod-concept/`.
+
 ## 1.7.0 — 2026-09-25
 
 - Formalized distinction between human developer Author name (`Osmar Briones`) and technical reverse-DNS identifier (`com.osmar`) in `REPO_MODS_METHODOLOGY.md` §7.1 and `REPO_MODS_WORKSPACE.md`:

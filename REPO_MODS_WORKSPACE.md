@@ -33,7 +33,10 @@ REPO_Mods/
 │   ├── REPO_MODS_METHODOLOGY.md
 │   ├── skills/
 │   │   ├── package-mod/        Thunderstore packaging & validation
-│   │   └── generate-thumbnail/ 256x256 icon generation & processing
+│   │   ├── generate-thumbnail/ 256x256 icon generation & processing
+│   │   ├── publish-mod/        Changelog promotion, git tag & automated publish
+│   │   ├── refine-mod-concept/ Cyclical concept refinement & scoping
+│   │   └── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
 │   ├── VERSION.md
 │   └── CHANGELOG.md
 └── AGENTS.md / GEMINI.md / CLAUDE.md
@@ -81,6 +84,13 @@ RepoKit provides shared skills to automate release packaging and asset preparati
 3. **`publish-mod` (`RepoKit/skills/publish-mod/SKILL.md`):**
    - Automates thumbnail check/generation, version synchronization, CHANGELOG release promotion (`[Unreleased]` -> `[X.Y.Z]`), packaging, Git release tagging (`vX.Y.Z`), and automated Thunderstore publishing via GitHub Actions and Thunderstore CLI (`tcli`).
    - Script: `powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/publish-mod/scripts/publish-mod.ps1 -ModPath .`
+4. **`refine-mod-concept` (`RepoKit/skills/refine-mod-concept/SKILL.md`):**
+   - Refines a raw mod idea through cyclical, iterative questions until its gameplay mechanics, networking scope (host vs client), configuration, audiovisual feel, and edge cases are completely defined with no gaps.
+   - Outputs a structured Mod Concept Specification ready for Spec-Kit and mod creation.
+5. **`create-mod` (`RepoKit/skills/create-mod/SKILL.md`):**
+   - Scaffolds and initializes a new mod repository directly from a concept.
+   - Refines the idea via `refine-mod-concept`, scaffolds from `repo_mod_template`, initializes Git, creates a public GitHub repo (`gh repo create`), provisions `THUNDERSTORE_TOKEN` secret, links `RepoAPI` and `RepoKit` submodules, prepares Spec-Kit (`specs/001-...`), and verifies compilation via `dotnet build`.
+   - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/create-mod/scripts/create-mod.ps1 -ModName <ModName> -Description <Description>`
 
 ## Multi-agent coordination
 
