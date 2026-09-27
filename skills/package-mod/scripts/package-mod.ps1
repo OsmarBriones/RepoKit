@@ -114,7 +114,8 @@ if ([string]::IsNullOrWhiteSpace($manifestContent.website_url) -or $manifestCont
         
         # Save back to manifest.json so it is updated permanently on disk
         $jsonString = $manifestContent | ConvertTo-Json -Depth 5
-        [System.IO.File]::WriteAllText($manifestPath, $jsonString, [System.Text.Encoding]::UTF8)
+        $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+        [System.IO.File]::WriteAllText($manifestPath, $jsonString, $utf8NoBom)
         Write-Host "    Auto-populated manifest.json 'website_url' from git origin: $gitRemote" -ForegroundColor Cyan
     }
 }

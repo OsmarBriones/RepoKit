@@ -36,6 +36,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 
 $resolvedPath = (Resolve-Path $ModPath).Path
 Write-Host "==> Starting Publish Workflow for R.E.P.O. Mod at: $resolvedPath" -ForegroundColor Cyan
@@ -156,14 +157,14 @@ $manifest.version_number = $targetVersion
 
 # Save manifest.json back
 $manifestJson = $manifest | ConvertTo-Json -Depth 5
-[System.IO.File]::WriteAllText($manifestPath, $manifestJson, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($manifestPath, $manifestJson, $utf8NoBom)
 
 # Sync .csproj version
 $csprojContent = Get-Content $csproj.FullName -Raw
 if ($csprojContent -match '<Version>(.*?)</Version>') {
     if ($Matches[1] -ne $targetVersion) {
         $csprojContent = $csprojContent -replace '<Version>.*?</Version>', "<Version>$targetVersion</Version>"
-        [System.IO.File]::WriteAllText($csproj.FullName, $csprojContent, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($csproj.FullName, $csprojContent, $utf8NoBom)
         Write-Host "    Updated $($csproj.Name) Version to $targetVersion" -ForegroundColor Gray
     }
 }
@@ -175,7 +176,7 @@ if ($pluginFiles.Count -gt 0) {
     $pluginContent = Get-Content $pluginFile.FullName -Raw
     if ($pluginContent -match 'PluginVersion\s*=\s*".*?"') {
         $pluginContent = $pluginContent -replace 'PluginVersion\s*=\s*".*?"', "PluginVersion = `"$targetVersion`""
-        [System.IO.File]::WriteAllText($pluginFile.FullName, $pluginContent, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($pluginFile.FullName, $pluginContent, $utf8NoBom)
         Write-Host "    Updated $($pluginFile.Name) PluginVersion to $targetVersion" -ForegroundColor Gray
     }
 }
@@ -194,7 +195,7 @@ if (Test-Path $changelogPath) {
     if ($changelogContent -match '##\s+\[?Unreleased\]?') {
         Write-Host "==> Promoting CHANGELOG.md [Unreleased] section to [$targetVersion] - $todayStr..." -ForegroundColor Cyan
         $changelogContent = $changelogContent -replace '##\s+\[?Unreleased\]?', "## [$targetVersion] - $todayStr"
-        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, $utf8NoBom)
         Write-Host "    CHANGELOG.md updated successfully." -ForegroundColor Green
     } elseif (-not $hasVersionEntry) {
         Write-Host "==> Adding curated player-facing entry for [$targetVersion] in CHANGELOG.md..." -ForegroundColor Cyan
@@ -238,7 +239,7 @@ if (Test-Path $changelogPath) {
             $changelogContent = "# Changelog`n$newEntry`n" + $changelogContent
         }
 
-        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, [System.Text.Encoding]::UTF8)
+        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, $utf8NoBom)
         Write-Host "    CHANGELOG.md updated with curated player-facing notes." -ForegroundColor Green
     }
 }
@@ -364,7 +365,7 @@ communities = [ "repo" ]
 [publish.categories]
 repo = []
 "@
-[System.IO.File]::WriteAllText($tomlPath, $tomlContent, [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($tomlPath, $tomlContent, $utf8NoBom)
 
 # 8. Push / Local Publish
 if (-not $SkipPush) {
