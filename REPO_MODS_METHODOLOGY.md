@@ -329,3 +329,26 @@ Testing mods for a closed-source, real-time Unity game with multiplayer networki
 3. **Roll out** the same pattern to `ExtractionPointReward`, `StartWithRandomWeapon`, `TumbleAttackStun`.
 4. **Reorganize** `reference/` and `sandbox/`.
 5. **Final verification** — build every mod, confirm deploy paths, confirm each Thunderstore zip contains a single merged DLL with no undeclared dependency.
+
+## 12. Cross-Platform & Multi-Machine Portability Policy
+
+This workspace operates across diverse development machines (Windows, macOS, Linux, and cloud CI/CD runners like GitHub Actions). No script, skill, configuration, or instruction may assume or be optimized for a single local machine setup.
+
+### 12.1 Dynamic PowerShell Interpreter Resolution
+- **Rule:** Never hardcode `powershell` (which fails on Linux, macOS, and GitHub Actions) or `pwsh` (which fails on standard Windows machines without PowerShell 7 installed).
+- **Standard Invocations:**
+  - Inside PowerShell scripts / CLI commands:
+    ```powershell
+    $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+    & $ps -ExecutionPolicy Bypass -File <path-to-script.ps1>
+    ```
+  - In GitHub Actions CI (`.github/workflows/publish.yml`): standardise on `shell: pwsh` since GitHub runners include PowerShell 7 natively.
+
+### 12.2 Path Neutrality & File System Independence
+- **Rule:** Never hardcode absolute personal user paths (e.g. `C:\Users\<Username>\...`) in tracked repository files, project configurations, or scripts.
+- Use relative path resolution based on script or project location (`Split-Path -Parent $MyInvocation.MyCommand.Path` or `Join-Path`).
+- Prefer forward slashes (`/`) or `Join-Path` for file system paths; both .NET runtime and PowerShell normalize forward slashes across all supported operating systems.
+
+### 12.3 Environment Variable Fallbacks & Graceful Degradation
+- Machine-dependent locations (such as the R.E.P.O. game directory) must be resolved via standard environment variables (e.g. `REPO_GAME_DIR`) with safe, sensible fallbacks in `Directory.Build.props`.
+- Optional developer credentials (`THUNDERSTORE_TOKEN`, `TCLI_AUTH_TOKEN`, `gh` CLI) must degrade gracefully: if not configured, scripts must issue clear, actionable warnings rather than abruptly crashing or corrupting state.

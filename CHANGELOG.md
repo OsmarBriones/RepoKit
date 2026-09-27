@@ -10,6 +10,10 @@
 - Added `develop-mod` skill (`RepoKit/skills/develop-mod/SKILL.md`):
   - Autonomous end-to-end mod development cycle using Spec-Kit (`plan.md`, `tasks.md`, C# code implementation, Harmony hooking, iterative compilation, and documentation updates).
   - Designed for autonomous technical execution, escalating only design/gameplay ambiguities or irreconcilable blockers to the human developer.
+- Established **Cross-Platform & Multi-Machine Portability Policy** in `REPO_MODS_METHODOLOGY.md` §12 and `REPO_MODS_WORKSPACE.md`:
+  - Enforced dynamic PowerShell engine resolution (`pwsh` preferred, fallback to `powershell`) across all scripts and skills.
+  - Mandated path neutrality (no hardcoded personal absolute paths, cross-platform slashes and `Join-Path`).
+  - Required graceful degradation for optional tools and environment tokens.
 - Added root workspace skill entry points under `.agents/skills/create-mod/`, `.agents/skills/refine-mod-concept/`, and `.agents/skills/develop-mod/`.
 
 ## 1.7.0 — 2026-09-25

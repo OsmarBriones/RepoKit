@@ -210,7 +210,8 @@ if (-not $SkipSpecKit) {
             "$($ModName.ToLower())-core"
         }
 
-        & powershell -ExecutionPolicy Bypass -File $specScript "$effectiveFeatureDesc" -ShortName "$effectiveShortName"
+        $psEngine = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
+        & $psEngine -ExecutionPolicy Bypass -File $specScript "$effectiveFeatureDesc" -ShortName "$effectiveShortName"
 
         # Ensure spec.md is populated with actual content (not raw placeholders)
         if ([string]::IsNullOrWhiteSpace($SpecMarkdownContent)) {

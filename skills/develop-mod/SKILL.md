@@ -69,9 +69,9 @@ The agent carries **100% of the technical workload**. The human developer is a s
 
 ### Stage 2: Technical Planning (`plan.md`)
 
-1. Initialize `plan.md` using the project's Spec-Kit script:
+1. Initialize `plan.md` using the project's Spec-Kit script with dynamic PowerShell engine resolution:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-plan.ps1
+   $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }; & $ps -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-plan.ps1
    ```
 2. **Reverse-Engineering & Reference Research:**
    - Search the decompiled game source in `reference/` (or `repo_decompiled_code/`) for the relevant classes:
@@ -93,12 +93,15 @@ The agent carries **100% of the technical workload**. The human developer is a s
 
 1. Initialize `tasks.md` using Spec-Kit:
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-tasks.ps1
+   $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }; & $ps -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-tasks.ps1
    ```
+   > [!NOTE]
+   > The output `AVAILABLE_DOCS: [FAIL]` in Spec-Kit indicates that optional research/contract docs were not created; this is normal and expected for single-feature mods and does NOT indicate a failure.
+
 2. Structure tasks into clean, sequential phases:
    - **Phase 1: Setup & Configuration**: ConfigurationController entries, default values.
    - **Phase 2: Core Domain Logic**: Controller/manager classes handling state and math.
-   - **Phase 3: Harmony Patches**: Hooking trigger methods, wiring events.
+   - **Phase 3: Harmony Patches**: Hooking trigger methods, wiring events, and removing template dummy patches (`ReloadOnLevelStart.cs`).
    - **Phase 4: Feedback & Game Feel**: Audio clips, particle/screen effects, logging.
    - **Phase 5: Verification & Documentation**: Build checks, ARCHITECTURE.md, README.md.
 

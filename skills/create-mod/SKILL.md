@@ -48,7 +48,8 @@ Creating a new mod consists of two connected phases:
 Once the concept is refined, execute the creation script from the workspace root:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File RepoKit/skills/create-mod/scripts/create-mod.ps1 `
+$ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+& $ps -ExecutionPolicy Bypass -File RepoKit/skills/create-mod/scripts/create-mod.ps1 `
     -ModName "<ModName>" `
     -Description "<Description>" `
     -FeatureDescription "<FeatureDescription>" `
