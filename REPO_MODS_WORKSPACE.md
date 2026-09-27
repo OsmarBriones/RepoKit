@@ -37,7 +37,8 @@ REPO_Mods/
 │   │   ├── generate-thumbnail/ 256x256 icon generation & processing
 │   │   ├── publish-mod/        Changelog promotion, git tag & automated publish
 │   │   ├── refine-mod-concept/ Cyclical concept refinement & scoping
-│   │   └── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
+│   │   ├── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
+│   │   └── develop-mod/        Autonomous Spec-Kit development loop & implementation
 │   ├── VERSION.md
 │   └── CHANGELOG.md
 └── AGENTS.md / GEMINI.md / CLAUDE.md
@@ -92,6 +93,10 @@ RepoKit provides shared skills to automate release packaging and asset preparati
    - Scaffolds and initializes a new mod repository directly from a concept.
    - Refines the idea via `refine-mod-concept`, scaffolds from `repo_mod_template`, initializes Git, creates a public GitHub repo (`gh repo create`), provisions `THUNDERSTORE_TOKEN` secret, links `RepoAPI` and `RepoKit` submodules, prepares Spec-Kit (`specs/001-...`), and verifies compilation via `dotnet build`.
    - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/create-mod/scripts/create-mod.ps1 -ModName <ModName> -Description <Description>`
+6. **`develop-mod` (`RepoKit/skills/develop-mod/SKILL.md`):**
+   - Autonomously executes the full mod development cycle using Spec-Kit.
+   - Performs technical planning (`plan.md`), task breakdown (`tasks.md`), C# domain and Harmony patch coding, iterative `dotnet build` verification, and documentation synchronization (`ARCHITECTURE.md`, `README.md`).
+   - Carries 100% of the technical workload, only consulting the human developer for critical gameplay/design decisions or irreconcilable blockers.
 
 ## Multi-agent coordination
 

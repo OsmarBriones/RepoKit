@@ -7,8 +7,10 @@
 - Added `create-mod` skill (`RepoKit/skills/create-mod/SKILL.md`) and automation script `create-mod.ps1`:
   - Scaffolds mod from `repo_mod_template` with `dotnet new repo-mod`.
   - Automatically initializes Git (`master`), links `RepoAPI` and `RepoKit` git submodules, and creates public GitHub repository with `THUNDERSTORE_TOKEN` secret.
-  - Automatically prepares Spec-Kit feature directory (`specs/001-...`) and verifies build compilation.
-- Added root workspace skill entry points under `.agents/skills/create-mod/` and `.agents/skills/refine-mod-concept/`.
+- Added `develop-mod` skill (`RepoKit/skills/develop-mod/SKILL.md`):
+  - Autonomous end-to-end mod development cycle using Spec-Kit (`plan.md`, `tasks.md`, C# code implementation, Harmony hooking, iterative compilation, and documentation updates).
+  - Designed for autonomous technical execution, escalating only design/gameplay ambiguities or irreconcilable blockers to the human developer.
+- Added root workspace skill entry points under `.agents/skills/create-mod/`, `.agents/skills/refine-mod-concept/`, and `.agents/skills/develop-mod/`.
 
 ## 1.7.0 — 2026-09-25
 
