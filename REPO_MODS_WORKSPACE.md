@@ -23,6 +23,7 @@ REPO_Mods/
 ├── DucksEveryWhere/            independent git repo — generated from template, migrated
 ├── ExtractionPointReward/      independent git repo — not yet migrated
 ├── StartWithRandomWeapon/      independent git repo — not yet migrated
+├── StealLifeFromMonsters/      independent git repo — generated via create-mod, Spec-Kit ready
 ├── TumbleAttackStun/           independent git repo — not yet migrated
 ├── RepoAPI/                    independent git repo — shared library (see below)
 ├── repo_mod_template/          independent git repo — dotnet new template (repo-mod)
