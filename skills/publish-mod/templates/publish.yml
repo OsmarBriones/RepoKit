@@ -52,6 +52,8 @@ jobs:
           "file=$zip" >> $env:GITHUB_OUTPUT
 
       - name: Publish Package to Thunderstore
+        id: ts_publish
+        continue-on-error: true
         uses: GreenTF/upload-thunderstore-package@v4.3
         with:
           token: ${{ secrets.THUNDERSTORE_TOKEN }}
@@ -60,3 +62,22 @@ jobs:
           name: ${{ steps.pkg_info.outputs.name }}
           version: ${{ steps.pkg_info.outputs.version }}
           file: ${{ steps.pkg_info.outputs.file }}
+
+      - name: Verify Publication Status
+        shell: pwsh
+        run: |
+          if ('${{ steps.ts_publish.outcome }}' -eq 'failure') {
+            Write-Warning "Thunderstore upload step reported failure. Checking if package version is already live..."
+            $pkgName = "${{ steps.pkg_info.outputs.name }}"
+            $pkgVersion = "${{ steps.pkg_info.outputs.version }}"
+            $url = "https://thunderstore.io/package/download/OsmarBriones/$pkgName/$pkgVersion/"
+            try {
+              $resp = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing -ErrorAction Stop
+              if ($resp.StatusCode -eq 200) {
+                Write-Host "Package $pkgName v$pkgVersion is already published on Thunderstore. Release is UP-TO-DATE." -ForegroundColor Green
+                exit 0
+              }
+            } catch {
+              throw "Thunderstore publish failed and package version is not published on Thunderstore."
+            }
+          }

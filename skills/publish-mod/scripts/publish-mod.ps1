@@ -373,12 +373,18 @@ if (-not $SkipPush) {
     & git -C $resolvedPath push origin master --tags
     Write-Host "==> SUCCESS: Tag $tagName pushed to GitHub!" -ForegroundColor Green
 
-    # Create GitHub Release with attached package asset to trigger GitHub Actions
+    # Create or update GitHub Release with attached package asset to trigger GitHub Actions
     $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
     if ($ghCmd) {
-        Write-Host "==> Creating GitHub Release $tagName with package asset..." -ForegroundColor Cyan
-        & gh release create $tagName $packagedZip.FullName --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName" 2>&1 | Out-Null
-        Write-Host "==> SUCCESS: GitHub Release created with package asset attached!" -ForegroundColor Green
+        Write-Host "==> Ensuring GitHub Release $tagName exists with package asset..." -ForegroundColor Cyan
+        $relCheck = & gh release view $tagName --repo "OsmarBriones/$modName" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "    GitHub Release $tagName already exists. Updating package asset..." -ForegroundColor Yellow
+            & gh release upload $tagName $packagedZip.FullName --clobber --repo "OsmarBriones/$modName" 2>&1 | Out-Null
+        } else {
+            & gh release create $tagName $packagedZip.FullName --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName" 2>&1 | Out-Null
+        }
+        Write-Host "==> SUCCESS: GitHub Release $tagName verified with package asset attached!" -ForegroundColor Green
         Write-Host "==> GitHub Actions is now publishing $modName $tagName to Thunderstore:" -ForegroundColor Green
         Write-Host "    https://github.com/OsmarBriones/$modName/actions" -ForegroundColor Cyan
     } else {
