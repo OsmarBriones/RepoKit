@@ -261,7 +261,7 @@ Every mod repository maintains documentation tailored to two distinct audiences:
    - **Audience:** Players downloading and installing the mod from Thunderstore or mod managers (r2modman).
    - **`## Features` Section:** Must be written entirely from the player's perspective, focusing on the gameplay experience, new capabilities, audiovisual effects, and balance changes in clear, accessible language.
    - **Multiplayer Transparency & Standard Phrasing:** Explain host/client requirements succinctly. When a mod only requires the host to install it and automatically syncs to clients, standardise on the concise phrasing: `"Only Host, clients don't need it."` in both `manifest.json` and `README.md`.
-   - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`), prohibiting direct personal developer contact.
+   - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`).
    - **Strictly Prohibited in `README.md`:** Do **not** leak internal Unity engine terms, hook/patch target names (such as `EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`, `RoundDirector`), Harmony patch signatures, class/method names, or code architecture details. Players care about what happens in the game, not which C# method is patched.
 
 ### 7.3 Release & Versioning Policy (`CHANGELOG.md` & SemVer Bumps)
