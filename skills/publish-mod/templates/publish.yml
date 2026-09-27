@@ -1,36 +1,45 @@
 name: Publish to Thunderstore
 
 on:
+  release:
+    types: [published]
   push:
     tags:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   publish:
-    name: Build & Publish to Thunderstore
+    name: Publish to Thunderstore
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Package Mod
+      - name: Download Release Package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          if (Test-Path "external/RepoKit/skills/package-mod/scripts/package-mod.ps1") {
-            & external/RepoKit/skills/package-mod/scripts/package-mod.ps1 -ModPath . -Configuration Release
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          $tag = if ('${{ github.event.release.tag_name }}') {
+            '${{ github.event.release.tag_name }}'
+          } elseif ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $env:GITHUB_REF_NAME
           } else {
-            dotnet build -c Release
+            (gh release list --limit 1 --json tagName --jq '.[0].tagName')
           }
+          Write-Host "Resolved release tag: $tag"
+          gh release download $tag --dir dist --pattern "*.zip"
+          $zip = Get-ChildItem -Path dist/*.zip | Select-Object -First 1
+          if (-not $zip) {
+            throw "No packaged .zip found in GitHub Release for tag $tag."
+          }
+          Write-Host "Found release package: $($zip.FullName)"
 
       - name: Read Package Metadata
         id: pkg_info

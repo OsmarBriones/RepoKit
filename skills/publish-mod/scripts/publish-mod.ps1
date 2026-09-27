@@ -367,29 +367,51 @@ repo = []
 "@
 [System.IO.File]::WriteAllText($tomlPath, $tomlContent, $utf8NoBom)
 
-# 8. Push / Local Publish
+# 8. Push Commits, Tags, and Create GitHub Release
 if (-not $SkipPush) {
     Write-Host "==> Pushing commits and tag $tagName to GitHub..." -ForegroundColor Cyan
     & git -C $resolvedPath push origin master --tags
     Write-Host "==> SUCCESS: Tag $tagName pushed to GitHub!" -ForegroundColor Green
+
+    # Create GitHub Release with attached package asset to trigger GitHub Actions
+    $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
+    if ($ghCmd) {
+        Write-Host "==> Creating GitHub Release $tagName with package asset..." -ForegroundColor Cyan
+        & gh release create $tagName $packagedZip.FullName --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName" 2>&1 | Out-Null
+        Write-Host "==> SUCCESS: GitHub Release created with package asset attached!" -ForegroundColor Green
+        Write-Host "==> GitHub Actions is now publishing $modName $tagName to Thunderstore:" -ForegroundColor Green
+        Write-Host "    https://github.com/OsmarBriones/$modName/actions" -ForegroundColor Cyan
+    } else {
+        Write-Warning "gh CLI not found. To trigger automated Thunderstore publishing via GitHub Actions, install gh CLI or create release manually."
+    }
 } else {
     Write-Host "    [-SkipPush specified] Release prepared and tagged locally." -ForegroundColor Yellow
 }
 
-if (-not [string]::IsNullOrWhiteSpace($localToken)) {
-    Write-Host "==> Publishing package to Thunderstore via tcli..." -ForegroundColor Cyan
-    $tcliCmd = Get-Command "tcli" -ErrorAction SilentlyContinue
-    if ($tcliCmd) {
-        $publishOutput = & tcli publish --file $distZip --token $localToken --config-path $tomlPath 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "==> SUCCESS: Mod $modName v$targetVersion successfully published to Thunderstore!" -ForegroundColor Green
-        } elseif ($publishOutput -match "Package of the same namespace, name and version already exists") {
-            Write-Host "==> UP-TO-DATE: Mod $modName v$targetVersion is ALREADY published on Thunderstore. No changes needed." -ForegroundColor Yellow
+# 9. Optional Local Publish via tcli (only when explicitly requested via -LocalPublish)
+if ($LocalPublish) {
+    if (-not [string]::IsNullOrWhiteSpace($localToken)) {
+        Write-Host "==> [-LocalPublish specified] Publishing package directly to Thunderstore via tcli..." -ForegroundColor Cyan
+        $tcliCmd = Get-Command "tcli" -ErrorAction SilentlyContinue
+        if ($tcliCmd) {
+            $publishOutput = & tcli publish --file $distZip --token $localToken --config-path $tomlPath 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "==> SUCCESS: Mod $modName v$targetVersion successfully published to Thunderstore!" -ForegroundColor Green
+            } elseif ($publishOutput -match "Package of the same namespace, name and version already exists") {
+                Write-Host "==> UP-TO-DATE: Mod $modName v$targetVersion is ALREADY published on Thunderstore. No changes needed." -ForegroundColor Yellow
+            } else {
+                Write-Host $publishOutput
+                throw "tcli publish failed with exit code $LASTEXITCODE"
+            }
         } else {
-            Write-Host $publishOutput
-            throw "tcli publish failed with exit code $LASTEXITCODE"
+            Write-Warning "tcli command not found locally. Install via 'dotnet tool install -g tcli'."
         }
     } else {
-        Write-Warning "tcli command not found locally. Install via 'dotnet tool install -g tcli'."
+        Write-Warning "Cannot perform local publish: THUNDERSTORE_TOKEN not found."
     }
+}
+
+# 10. Clean up temporary thunderstore.toml
+if (Test-Path $tomlPath) {
+    Remove-Item $tomlPath -Force -ErrorAction SilentlyContinue
 }
