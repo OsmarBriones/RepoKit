@@ -311,6 +311,10 @@ Testing mods for a closed-source, real-time Unity game with multiplayer networki
 ### Why full headless E2E is avoided
 - Running `REPO.exe -batchmode -nographics` can bypass rendering, but proprietary game initialization (Steamworks `SteamAPI.Init()` and Photon networking handshakes) makes fully headless CI/CD execution unreliable. Tier 1 + 2 provide automated regression safety, while Tier 3 manual verification is sufficient for in-game behavior.
 
+### On-Demand Test Battery Generation (`generate-test-battery`)
+- To prevent maintaining redundant, fragile static test documents across mod repositories, developers and agents use the shared `generate-test-battery` skill.
+- It dynamically inspects active specs (`spec.md`), `ARCHITECTURE.md`, configuration bindings, and Harmony patches to synthesize an actionable Tier 1-3 QA test protocol with interactive checkboxes (`- [ ]`), baseline parity checks, configuration boundaries, negative failure modes, multiplayer authority validation, and `LogOutput.log` audit patterns on demand.
+
 ## 9. Git hygiene
 
 - One repo per mod. No repo nested inside another mod's folder.

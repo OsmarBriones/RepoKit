@@ -105,6 +105,9 @@ RepoKit provides shared skills to automate release packaging and asset preparati
    - Cleans deployed mod assemblies (`<ModName>.dll`, `.pdb`, folders, and optional configs) from Steam and/or r2modman game installations to test clean vanilla states or version switches.
    - Configurable target: `-Target All` (default), `-Target Steam`, or `-Target R2` (supports `-Profile <Name>|All`).
    - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/clean-mod/scripts/clean-mod.ps1 [-ModName <ModName>] [-Target All|Steam|R2]`
+8. **`generate-test-battery` (`RepoKit/skills/generate-test-battery/SKILL.md`):**
+   - Generates an actionable, comprehensive QA testing battery (Tier 1-3 protocol) on-demand by synthesizing existing specs, `ARCHITECTURE.md`, configuration files, and Harmony hooks.
+   - Outputs an interactive checklist with baseline checks, core happy path walkthroughs, configuration boundary matrices, negative edge cases, multiplayer host/client authority checks, and log grep patterns.
 
 ## Multi-agent coordination
 
