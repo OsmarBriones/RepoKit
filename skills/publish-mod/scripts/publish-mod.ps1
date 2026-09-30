@@ -246,8 +246,8 @@ if (Test-Path $changelogPath) {
     # 4.1. Audit & Validate CHANGELOG.md historical version coverage
     Write-Host "==> Auditing CHANGELOG.md historical version coverage..." -ForegroundColor Cyan
     $legacyChangelogCandidates = @(
-        Join-Path $resolvedPath "zip\CHANGELOG.md",
-        Join-Path $resolvedPath "docs\CHANGELOG.md"
+        (Join-Path $resolvedPath "zip\CHANGELOG.md"),
+        (Join-Path $resolvedPath "docs\CHANGELOG.md")
     )
     foreach ($legChangelog in $legacyChangelogCandidates) {
         if (Test-Path $legChangelog) {
@@ -301,8 +301,8 @@ foreach ($sec in $requiredSections) {
 
 # Detect legacy READMEs and check credits/content preservation
 $legacyReadmeCandidates = @(
-    Join-Path $resolvedPath "zip\README.md",
-    Join-Path $resolvedPath "docs\README.md"
+    (Join-Path $resolvedPath "zip\README.md"),
+    (Join-Path $resolvedPath "docs\README.md")
 )
 foreach ($legReadme in $legacyReadmeCandidates) {
     if (Test-Path $legReadme) {
