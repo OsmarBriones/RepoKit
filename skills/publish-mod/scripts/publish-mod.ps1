@@ -242,6 +242,112 @@ if (Test-Path $changelogPath) {
         [System.IO.File]::WriteAllText($changelogPath, $changelogContent, $utf8NoBom)
         Write-Host "    CHANGELOG.md updated with curated player-facing notes." -ForegroundColor Green
     }
+
+    # 4.1. Audit & Validate CHANGELOG.md historical version coverage
+    Write-Host "==> Auditing CHANGELOG.md historical version coverage..." -ForegroundColor Cyan
+    $legacyChangelogCandidates = @(
+        Join-Path $resolvedPath "zip\CHANGELOG.md",
+        Join-Path $resolvedPath "docs\CHANGELOG.md"
+    )
+    foreach ($legChangelog in $legacyChangelogCandidates) {
+        if (Test-Path $legChangelog) {
+            $legContent = Get-Content $legChangelog -Raw
+            $legVersionMatches = [regex]::Matches($legContent, '##\s+\[?(\d+\.\d+\.\d+)\]?')
+            foreach ($lvm in $legVersionMatches) {
+                $legVer = $lvm.Groups[1].Value
+                if ($changelogContent -notmatch "##\s+\[?$([regex]::Escape($legVer))\]?") {
+                    Write-Warning "Historical version $legVer found in $legChangelog is missing from root CHANGELOG.md! Merging..."
+                    $pattern = "(?s)##\s+\[?" + [regex]::Escape($legVer) + "\]?.*?(?=(?:##\s+\[?\d+\.\d+\.\d+\]?|\Z))"
+                    $match = [regex]::Match($legContent, $pattern)
+                    if ($match.Success) {
+                        $changelogContent = $changelogContent.TrimEnd() + "`n`n" + $match.Value.Trim() + "`n"
+                        [System.IO.File]::WriteAllText($changelogPath, $changelogContent, $utf8NoBom)
+                        Write-Host "    Merged historical version $legVer into root CHANGELOG.md." -ForegroundColor Green
+                    }
+                }
+            }
+        }
+    }
+
+    # Verify existing git tags are in CHANGELOG.md
+    $allTags = & git -C $resolvedPath tag -l "v*" 2>$null
+    if ($allTags) {
+        foreach ($t in ($allTags -split "`r?`n")) {
+            $tagVer = $t.Trim().TrimStart('v')
+            if ($tagVer -match '^\d+\.\d+\.\d+' -and $tagVer -ne $targetVersion) {
+                if ($changelogContent -notmatch "##\s+\[?$([regex]::Escape($tagVer))\]?") {
+                    Write-Warning "Git tag $t exists, but version $tagVer is missing from CHANGELOG.md."
+                }
+            }
+        }
+    }
+}
+
+# 4.2. Audit & Validate README.md completeness and accuracy
+$readmePath = Join-Path $resolvedPath "README.md"
+if (-not (Test-Path $readmePath)) {
+    throw "Missing required file: README.md"
+}
+Write-Host "==> Auditing README.md completeness and accuracy..." -ForegroundColor Cyan
+$readmeContent = Get-Content $readmePath -Raw
+
+# Check essential sections
+$requiredSections = @("Features", "Configuration", "Installation", "Credits")
+foreach ($sec in $requiredSections) {
+    if ($readmeContent -notmatch "(?i)##\s+.*$sec") {
+        Write-Warning "README.md is missing recommended section: '## $sec'"
+    }
+}
+
+# Detect legacy READMEs and check credits/content preservation
+$legacyReadmeCandidates = @(
+    Join-Path $resolvedPath "zip\README.md",
+    Join-Path $resolvedPath "docs\README.md"
+)
+foreach ($legReadme in $legacyReadmeCandidates) {
+    if (Test-Path $legReadme) {
+        $legContent = Get-Content $legReadme -Raw
+        if ($legContent -match '(?i)credit|thanks|contributor') {
+            $legCreditsMatches = [regex]::Matches($legContent, '(?i)(?:thanks to|credit to|by)\s+\*\*?([A-Za-z0-9_ -]+)\*\*?')
+            foreach ($cm in $legCreditsMatches) {
+                $contributor = $cm.Groups[1].Value.Trim()
+                if ($contributor -and $contributor -ne "Osmar Briones" -and $readmeContent -notmatch [regex]::Escape($contributor)) {
+                    Write-Warning "Legacy README ($legReadme) credits '$contributor', but they appear missing from current README.md Credits section!"
+                }
+            }
+        }
+    }
+}
+
+# Check if C# Config options are documented in README
+$csFiles = Get-ChildItem -Path $resolvedPath -Filter "*.cs" -Recurse | Where-Object { $_.FullName -notmatch '[\\/](obj|bin|dist|external)[\\/]' }
+$configKeys = [System.Collections.Generic.HashSet[string]]::new()
+foreach ($cs in $csFiles) {
+    $code = Get-Content $cs.FullName -Raw
+    $bindMatches = [regex]::Matches($code, 'Bind(?:<[^>]+>)?\s*\(\s*"[^"]+"\s*,\s*"([^"]+)"')
+    foreach ($bm in $bindMatches) {
+        $configKeys.Add($bm.Groups[1].Value) | Out-Null
+    }
+}
+$missingKeys = @()
+foreach ($key in $configKeys) {
+    if ($readmeContent -notmatch [regex]::Escape($key)) {
+        $missingKeys += $key
+    }
+}
+if ($missingKeys.Count -gt 0) {
+    Write-Warning "The following configuration keys from code were not found in README.md: $($missingKeys -join ', ')"
+    Write-Warning "Please ensure all player-facing settings are documented in README.md."
+} else {
+    Write-Host "    Configuration options coverage verified in README.md." -ForegroundColor Green
+}
+
+# Check for unresolved template placeholders
+$placeholders = @("YOUR_REPO_URL", "AUTHOR_ID", "Example mod description", "TODO")
+foreach ($ph in $placeholders) {
+    if ($readmeContent -match [regex]::Escape($ph)) {
+        throw "README.md contains unresolved placeholder: '$ph'"
+    }
 }
 
 # 5. Ensure GitHub Actions Workflow exists (.github/workflows/publish.yml)
