@@ -21,7 +21,7 @@ Full rationale and the complete convention (folder layout, naming, docs standard
 REPO_Mods/
 ├── EnemyDrops/                 independent git repo — migrated to the current convention (pilot)
 ├── DucksEveryWhere/            independent git repo — generated from template, migrated
-├── ExtractionPointReward/      independent git repo — not yet migrated
+├── ExtractionPointReward/      independent git repo — migrated to the current convention
 ├── StartWithRandomWeapon/      independent git repo — not yet migrated
 ├── StealLifeFromMonsters/      independent git repo — generated via create-mod, Spec-Kit ready
 ├── TumbleAttackStun/           independent git repo — not yet migrated
@@ -69,7 +69,7 @@ REPO_Mods/
 
 ## Migration status
 
-`EnemyDrops`, `RepoAPI`, and `repo_mod_template` have been brought onto this convention. `ExtractionPointReward`, `StartWithRandomWeapon`, and `TumbleAttackStun` still need the same treatment (flatten nesting, `Directory.Build.props`, dedupe against RepoAPI where it's a real duplicate, docs). Follow §10 of `REPO_MODS_METHODOLOGY.md` for the phased plan, and `EnemyDrops/CLAUDE.md` + `EnemyDrops/ARCHITECTURE.md` as the reference example of the target shape (both build and docs).
+`EnemyDrops`, `DucksEveryWhere`, `ExtractionPointReward`, `RepoAPI`, and `repo_mod_template` have been brought onto this convention. `StartWithRandomWeapon` and `TumbleAttackStun` still need the same treatment (flatten nesting, `Directory.Build.props`, dedupe against RepoAPI where it's a real duplicate, docs). Follow §10 of `REPO_MODS_METHODOLOGY.md` for the phased plan, and `EnemyDrops/CLAUDE.md` + `EnemyDrops/ARCHITECTURE.md` as the reference example of the target shape (both build and docs).
 
 ## Reference material
 
