@@ -39,6 +39,8 @@ REPO_Mods/
 │   │   ├── refine-mod-concept/ Cyclical concept refinement & scoping
 │   │   ├── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
 │   │   └── develop-mod/        Autonomous Spec-Kit development loop & implementation
+│   ├── references/
+│   │   └── item-prices.md      canonical item shop prices & economic reference (59+ items)
 │   ├── VERSION.md
 │   └── CHANGELOG.md
 └── AGENTS.md / GEMINI.md / CLAUDE.md

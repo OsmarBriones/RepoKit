@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added canonical item shop prices and economics reference in `RepoKit/references/item-prices.md`:
+  - Documents all 59+ game items with their English/Spanish names, internal keys, categories, base `[valueMin, valueMax]` ranges, and resulting shop price ranges (`$K`).
+  - Formalizes shop pricing formulas from `ItemAttributes` and `ShopManager`, including dynamic scaling rules for player upgrades (+50% per purchase), health packs (+5% per level), and power crystals (+20% per level).
 - Added `refine-mod-concept` skill (`RepoKit/skills/refine-mod-concept/SKILL.md`):
   - Cyclical Q&A clarification loop to refine raw mod ideas into unambiguous specifications (gameplay, networking, config, audio/visual feel, edge cases, naming).
 - Added `create-mod` skill (`RepoKit/skills/create-mod/SKILL.md`) and automation script `create-mod.ps1`:
