@@ -143,6 +143,9 @@ if (Test-Path $readmePath) {
 
 # 7. Initialize Git Repository
 Write-Host "==> Initializing Git repository on master branch..." -ForegroundColor Cyan
+$prevEa = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+
 & git -C $targetPath init -b master | Out-Null
 & git -C $targetPath config core.autocrlf true | Out-Null
 & git -C $targetPath config core.safecrlf false | Out-Null
@@ -152,8 +155,8 @@ Write-Host "==> Adding git submodules (RepoAPI and RepoKit)..." -ForegroundColor
 $repoApiUrl = "https://github.com/OsmarBriones/RepoAPI.git"
 $repoKitUrl = "https://github.com/OsmarBriones/RepoKit.git"
 
-& git -C $targetPath -c core.safecrlf=false submodule add $repoApiUrl external/RepoAPI 2>$null | Out-Null
-& git -C $targetPath -c core.safecrlf=false submodule add $repoKitUrl external/RepoKit 2>$null | Out-Null
+& git -C $targetPath -c core.safecrlf=false submodule add $repoApiUrl external/RepoAPI
+& git -C $targetPath -c core.safecrlf=false submodule add $repoKitUrl external/RepoKit
 
 # 9. Initial Commit
 Write-Host "==> Creating initial git commit..." -ForegroundColor Cyan
@@ -174,6 +177,7 @@ if (-not $SkipGitHub) {
         } catch {
             Write-Warning "Could not create or push to GitHub repo: $_"
         }
+$ErrorActionPreference = $prevEa
 
         # Provision THUNDERSTORE_TOKEN secret if set
         $token = if ($env:THUNDERSTORE_TOKEN) { $env:THUNDERSTORE_TOKEN } else { $env:TCLI_AUTH_TOKEN }
