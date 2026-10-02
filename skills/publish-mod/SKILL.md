@@ -56,6 +56,30 @@ Before publishing via GitHub Actions for the first time, add your **Thunderstore
 
 ---
 
+## Mandatory Pre-Publish Approval Gate (Written Confirmation)
+
+Before publishing any mod or pushing release tags, the agent MUST present all relevant release information to the user and request explicit written approval:
+
+1. **Pre-Release Summary Presentation:**
+   The agent outputs a detailed summary directly in normal chat text containing:
+   - Mod Name & Target Release Version (`vX.Y.Z`)
+   - Manifest Description & Website URL
+   - Promoted Changelog entries (`[Unreleased]` -> `[X.Y.Z]`)
+   - Verified Categories (`categories.txt`)
+   - Thumbnail verification status (`icon.png`, 256x256)
+   - Git Tag name and commit plan
+
+2. **NO Clickable Options / NO `ask_question` Tool:**
+   - **CRITICAL SAFETY DIRECTIVE:** The agent MUST NOT call `ask_question` or any UI modal tool that renders clickable options or buttons for release confirmation, strictly preventing accidental misclicks.
+   - The agent MUST output regular chat markdown asking the user to manually type the exact confirmation word: `aprobado` (or type `abortar` / request adjustments).
+
+3. **Strict Gate Condition:**
+   - The agent MUST STOP its tool calls and wait for the user's manual typed response.
+   - The agent will ONLY proceed to execute `publish-mod.ps1 -Confirmed` if the user's reply explicitly contains `aprobado`.
+   - If the user types anything else, requests changes, or aborts, the agent must NOT publish and must address the user's feedback instead.
+
+---
+
 ## Automated Execution
 
 ### Option 1: PowerShell Automation Script (Recommended)

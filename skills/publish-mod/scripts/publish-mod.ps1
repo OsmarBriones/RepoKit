@@ -32,7 +32,8 @@ param(
     [ValidateSet("patch", "minor", "major", "")]
     [string]$Bump = "",
     [switch]$SkipPush,
-    [switch]$LocalPublish
+    [switch]$LocalPublish,
+    [switch]$Confirmed
 )
 
 $ErrorActionPreference = "Stop"
@@ -466,8 +467,33 @@ if (-not (Test-Path $distZip)) {
 
 Write-Host "==> Verified packaged archive: $distZip" -ForegroundColor Green
 
-# 7. Git Commit, Tag, and Push
+# 6.1 Pre-Release Approval Gate
 $tagName = "v$targetVersion"
+Write-Host ""
+Write-Host "================ PRE-RELEASE SUMMARY ================" -ForegroundColor Cyan
+Write-Host " Mod Name    : $modName" -ForegroundColor White
+Write-Host " Version     : $targetVersion (Tag: $tagName)" -ForegroundColor White
+Write-Host " Description : $($manifest.description)" -ForegroundColor White
+Write-Host " Website URL : $($manifest.website_url)" -ForegroundColor White
+Write-Host " Categories  : $($categories -join ', ')" -ForegroundColor White
+Write-Host " Package Zip : $distZip" -ForegroundColor White
+Write-Host "=====================================================" -ForegroundColor Cyan
+Write-Host ""
+
+if (-not $Confirmed) {
+    if ([Environment]::UserInteractive) {
+        $userInput = Read-Host "Type 'aprobado' to proceed with release (or anything else to abort)"
+        if ($userInput -ne "aprobado") {
+            Write-Warning "Publish cancelled by user (input was '$userInput', expected 'aprobado')."
+            return
+        }
+        Write-Host "Confirmation received ('aprobado'). Proceeding with release..." -ForegroundColor Green
+    } else {
+        throw "Release confirmation required. Pass -Confirmed to authorize publication or run interactively and type 'aprobado'."
+    }
+}
+
+# 7. Git Commit, Tag, and Push
 Write-Host "==> Staging git changes and creating tag $tagName..." -ForegroundColor Cyan
 
 & git -C $resolvedPath add .

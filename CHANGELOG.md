@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added mandatory pre-publish approval gate to `publish-mod` skill (`RepoKit/skills/publish-mod/SKILL.md`) and `publish-mod.ps1`:
+  - Agents must present a complete pre-release summary and strictly require manual user typed confirmation (`aprobado`) before tagging/pushing releases, preventing accidental releases by forbidding clickable UI option modals (`ask_question`).
+  - Added `-Confirmed` switch to `publish-mod.ps1` with interactive `Read-Host` confirmation prompt when executed manually.
 - Added canonical item shop prices and economics reference in `RepoKit/references/item-prices.md`:
   - Documents all 59+ game items with their English/Spanish names, internal keys, categories, base `[valueMin, valueMax]` ranges, and resulting shop price ranges (`$K`).
   - Formalizes shop pricing formulas from `ItemAttributes` and `ShopManager`, including dynamic scaling rules for player upgrades (+50% per purchase), health packs (+5% per level), and power crystals (+20% per level).
