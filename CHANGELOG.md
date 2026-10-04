@@ -2,7 +2,9 @@
 
 ## [Unreleased]
 
-- Added mandatory pre-publish approval gate to `publish-mod` skill (`RepoKit/skills/publish-mod/SKILL.md`) and `publish-mod.ps1`:
+- Added **Multiplayer Authority & Network Architecture Standards** in `REPO_MODS_METHODOLOGY.md` §6.2.2 and `RepoKit/skills/refine-mod-concept/SKILL.md`:
+  - Formalized the 3-tier networking scope classification: Category 1 (True Host-Only), Category 2 (Client-Synced), and Category 3 (Asymmetric Hybrid / Graceful Degradation).
+  - Instituted the mandatory **4-Question Network Feasibility Gate** (evaluating input hooks, native RPC serialization, state machine dimensionality, and unequip/drop lifecycle side-effects) to prevent desynchronization when designing Host-Only mods.
   - Agents must present a complete pre-release summary and strictly require manual user typed confirmation (`aprobado`) before tagging/pushing releases, preventing accidental releases by forbidding clickable UI option modals (`ask_question`).
   - Added `-Confirmed` switch to `publish-mod.ps1` with interactive `Read-Host` confirmation prompt when executed manually.
 - Added canonical item shop prices and economics reference in `RepoKit/references/item-prices.md`:

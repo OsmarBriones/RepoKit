@@ -39,7 +39,19 @@ In each cycle, check if all of the following six dimensions have clear, concrete
 - **Limits / Caps**: Is there a cap? Can it overheal beyond maximum player health, or strictly clamped to max HP?
 
 ### 2. Multiplayer & Synchronization Model
-- **Host vs. Client**: Does this run strictly on the Host (where the host executes logic and syncs health/state via game RPCs), or does every player need the mod installed?
+- **Categorization**: Classify into one of the 3 standard scopes:
+  - **Category 1 (True Host-Only)**: Logic executed 100% on the MasterClient via vanilla game RPCs or object spawns. Vanilla clients connect without DLL. Manifest: `"Only Host, clients don't need it."`.
+  - **Category 2 (Client-Synced)**: All players required. Mandatory if introducing custom keybinds/inputs, custom 3D models/bundles, custom UI/HUD canvas overlays, or local camera/audio mechanics.
+  - **Category 3 (Asymmetric Hybrid)**: Mechanics run Host-Only for all players; modded clients receive enhanced audiovisual synchronization (custom shaders, colored beams, LEDs, localized UI labels).
+- **The 4-Question Network Feasibility Gate (MANDATORY IF PROPOSING HOST-ONLY)**:
+  1. *Does the trigger hook a client-held input (`heldByLocalPlayer` / `SemiFunc.InputDown`)?*
+     If yes, the interaction must match native binary input states (e.g. alternating ON/OFF) or require the DLL on clients.
+  2. *Does R.E.P.O. have native RPCs for the visual/game effect?*
+     Damage, health, and positions are synchronized; shaders, line renderer colors, and UI overlays are strictly local.
+  3. *Is the vanilla target state machine binary (ON/OFF) or custom extensible?*
+     Forcing a 3rd state on a binary toggle causes packet bouncing.
+  4. *What happens on unequip, drop, or depletion?*
+     Prevent auto-turn-off interference (`autoTurnOffWhenEquipped`, `DropItem`).
 - **Manifest convention**: If host-only, enforce the workspace standard phrase: `"Only Host, clients don't need it."`.
 
 ### 3. Configurable Settings (`BepInEx/config/com.osmar.<ModName>.cfg`)

@@ -188,6 +188,35 @@ R.E.P.O. levels are generated procedurally over multiple frames via `LevelGenera
    - **Timing:** Executes once `LevelGenerator.Instance.Generated == true`, after all rooms, the truck, extraction points, and player spawn points are instantiated.
    - **Appropriate for:** Spawning starting items, placing world objects, anchoring items to `TruckSafetySpawnPoint.instance`, or querying level rooms and player avatars.
 
+### 6.2.2 Multiplayer Authority and Network Architecture
+
+Never assume a mod can be "Host-Only" without rigorous network feasibility verification. R.E.P.O. uses Photon Unity Networking 2 (PUN 2) with host-authoritative logic for enemies, dungeon state, and physics, but processes player inputs and client visuals strictly locally.
+
+Every mod must be formally categorized into one of three networking scopes:
+
+1. **Category 1: True Host-Only (`Only Host, clients don't need it`)**
+   - **Applicability:** Spawning vanilla items via `PhotonNetwork.InstantiateRoomObject`, modifying enemy AI/difficulty/aggro, adjusting extraction rewards, altering global level rules, or intercepting native binary toggle inputs (`ItemToggle`).
+   - **Requirement:** Must rely strictly on game RPCs and synchronized components already present in vanilla clients.
+
+2. **Category 2: Client-Synced (`All players required`)**
+   - **Applicability:** Introducing custom keybinds/inputs, custom 3D models/bundles, custom UI/HUD canvas elements, or local client camera/audio mechanics.
+   - **Requirement:** Every client in the lobby must install the mod DLL.
+
+3. **Category 3: Asymmetric Hybrid (`Graceful Degradation`)**
+   - **Applicability:** Authoritative gameplay and physics run host-only so vanilla clients can join and play normally; modded clients receive enhanced audiovisual synchronization (e.g. custom colored laser beams, LED emission, localized UI labels).
+   - **Requirement:** Host logic must never depend on the client having the DLL installed.
+
+#### The 4-Question Network Feasibility Gate (Mandatory before coding Host-Only mods)
+
+1. **Input Processing:** *Does the feature hook a client-held input (`heldByLocalPlayer` / `SemiFunc.InputDown`)?*
+   - If yes: A vanilla client executes its unmodded logic locally before notifying the host. Mod interactions must either match native input states (e.g. alternating binary ON/OFF cycles) or require client installation.
+2. **Network Serialization:** *Does R.E.P.O. have native RPCs for the desired visual or game effect?*
+   - Damage, health, and physics are synchronized. Shaders, line renderer colors, material tints, and floating HUDs are purely local. If clients must see custom visual colors (e.g. red laser beams), they must install the DLL.
+3. **State Machine Dimensionality:** *Is the vanilla target state machine binary or extensible?*
+   - Forcing a 3rd state on a binary toggle (`ItemToggle`) causes network packet bouncing and desync. Use alternating activation or state-isolated triggers.
+4. **Lifecycle Side-Effects:** *What happens on unequip, drop, or depletion?*
+   - Account for `autoTurnOffWhenEquipped`, `PhysGrabObject.DropItem`, and battery timeouts (`StateNoBattery`) to prevent unintended state locks.
+
 ### 6.3 Scoping and encapsulation
 
 - **Default to `internal` or `private`:** Only the BepInEx entry point (`[BepInPlugin]`) must be `public`. All other classes, structs, helpers, and patches inside a mod should be `internal` or `private` to avoid polluting the global Unity assembly namespace.
