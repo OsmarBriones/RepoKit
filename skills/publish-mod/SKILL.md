@@ -68,6 +68,7 @@ Before publishing any mod or pushing release tags, the agent MUST present all re
    - Verified Categories (`categories.txt`)
    - Thumbnail verification status (`icon.png`, 256x256)
    - Git Tag name and commit plan
+   - Complete `README.md` content (rendered in a clean quote/preview block so the user can verify the exact player-facing presentation before publishing)
 
 2. **NO Clickable Options / NO `ask_question` Tool:**
    - **CRITICAL SAFETY DIRECTIVE:** The agent MUST NOT call `ask_question` or any UI modal tool that renders clickable options or buttons for release confirmation, strictly preventing accidental misclicks.

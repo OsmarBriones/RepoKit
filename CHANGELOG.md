@@ -8,7 +8,7 @@
 - Added **Multiplayer Scope Disclosure Standards in `README.md` & `manifest.json`** in `REPO_MODS_METHODOLOGY.md` §7.2.1 and `refine-mod-concept` skill:
   - Established standardized description phrasing per scope category for `manifest.json` (< 250 chars).
   - Defined the mandatory GitHub alert callout template for Category 3 (Asymmetric Hybrid) mods in `README.md` comparing Vanilla client gameplay vs. Enhanced client audiovisuals without technical engine jargon.
-  - Agents must present a complete pre-release summary and strictly require manual user typed confirmation (`aprobado`) before tagging/pushing releases, preventing accidental releases by forbidding clickable UI option modals (`ask_question`).
+  - Agents must present a complete pre-release summary (including the full player-facing `README.md` content) and strictly require manual user typed confirmation (`aprobado`) before tagging/pushing releases, preventing accidental releases by forbidding clickable UI option modals (`ask_question`).
   - Added `-Confirmed` switch to `publish-mod.ps1` with interactive `Read-Host` confirmation prompt when executed manually.
 - Added canonical item shop prices and economics reference in `RepoKit/references/item-prices.md`:
   - Documents all 59+ game items with their English/Spanish names, internal keys, categories, base `[valueMin, valueMax]` ranges, and resulting shop price ranges (`$K`).
