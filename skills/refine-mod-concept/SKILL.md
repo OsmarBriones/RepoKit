@@ -52,7 +52,10 @@ In each cycle, check if all of the following six dimensions have clear, concrete
      Forcing a 3rd state on a binary toggle causes packet bouncing.
   4. *What happens on unequip, drop, or depletion?*
      Prevent auto-turn-off interference (`autoTurnOffWhenEquipped`, `DropItem`).
-- **Manifest convention**: If host-only, enforce the workspace standard phrase: `"Only Host, clients don't need it."`.
+- **Manifest and README conventions per category** (see `REPO_MODS_METHODOLOGY.md` §7.2.1):
+  - **Category 1 (True Host-Only):** Manifest ends with `"Only Host, clients don't need it."`.
+  - **Category 2 (Client-Synced):** Manifest ends with `"Requires all players (Host and Clients) to install."`.
+  - **Category 3 (Asymmetric Hybrid):** Manifest ends with `"<Summary>. Only Host needed (clients can optionally install for <Specific Visuals/Audio>)."` (< 250 chars). README includes the standard Vanilla vs. Enhanced `> [!NOTE]` callout block.
 
 ### 3. Configurable Settings (`BepInEx/config/com.osmar.<ModName>.cfg`)
 - What parameters should players be able to tune?
@@ -95,8 +98,9 @@ Once all dimensions are resolved, output the specification in this exact structu
 ## Metadata
 - **Mod Name:** <ModName> (PascalCase)
 - **Plugin GUID:** com.osmar.<ModName>
-- **Manifest Description:** <Description under 250 chars>
-- **Multiplayer Mode:** Only Host, clients don't need it / All players required
+- **Manifest Description:** <Description under 250 chars adhering to the category standard>
+- **Multiplayer Scope:** Category 1 (True Host-Only) / Category 2 (Client-Synced) / Category 3 (Asymmetric Hybrid)
+- **Multiplayer README Callout:** (If Category 3, include the formatted `> [!NOTE]` block)
 
 ## Gameplay Rules
 - **Trigger:** ...

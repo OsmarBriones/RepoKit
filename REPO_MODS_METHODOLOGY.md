@@ -289,9 +289,42 @@ Every mod repository maintains documentation tailored to two distinct audiences:
 1. **`README.md` (Thunderstore Players):**
    - **Audience:** Players downloading and installing the mod from Thunderstore or mod managers (r2modman).
    - **`## Features` Section:** Must be written entirely from the player's perspective, focusing on the gameplay experience, new capabilities, audiovisual effects, and balance changes in clear, accessible language.
-   - **Multiplayer Transparency & Standard Phrasing:** Explain host/client requirements succinctly. When a mod only requires the host to install it and automatically syncs to clients, standardise on the concise phrasing: `"Only Host, clients don't need it."` in both `manifest.json` and `README.md`.
    - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`).
    - **Strictly Prohibited in `README.md`:** Do **not** leak internal Unity engine terms, hook/patch target names (such as `EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`, `RoundDirector`), Harmony patch signatures, class/method names, or code architecture details. Players care about what happens in the game, not which C# method is patched.
+
+2. **`ARCHITECTURE.md` (Developers & AI Agents):**
+   - **Audience:** Mod developers and AI coding agents.
+   - **Purpose:** Documents the internal mechanics: runtime data flow, Harmony patch targets, lifecycle hooks, network authority checks, and design rationale.
+
+### 7.2.1 Multiplayer Scope Disclosure in `README.md` & `manifest.json`
+
+To balance user adoption with absolute clarity, mod packaging and documentation must transparently disclose multiplayer installation requirements according to the 3-tier networking scope (§6.2.2). The goal is to reassure hosts that vanilla friends can join without barriers, while explicitly defining expectations for clients so no player feels surprised or deceived.
+
+#### Documentation & Metadata Matrix
+
+| Scope Category | `manifest.json` Description Standard (< 250 chars) | `README.md` Callout Position & Tone |
+| :--- | :--- | :--- |
+| **Category 1 (True Host-Only)** | `<Summary>. Only Host, clients don't need it.` | Clear reassurance note at the top of the README stating friends can join completely vanilla. |
+| **Category 2 (Client-Synced)** | `<Summary>. Requires all players (Host and Clients) to install.` | `> [!IMPORTANT]` block at the top indicating the mod must be installed by all players due to custom assets, keybinds, or local UI. |
+| **Category 3 (Asymmetric Hybrid)** | `<Summary>. Only Host needed (clients can optionally install for <Specific Visuals/Audio>).` | Mandatory `> [!NOTE]` block directly after the title comparing Vanilla vs. Enhanced experience. |
+
+#### Standard Callout Template for Category 3 Mods (`README.md`)
+
+Place this block directly below the title header and short summary:
+
+```markdown
+> [!NOTE]
+> ### 👥 Multiplayer: Only Host Needed (Clients Optional)
+> **Your friends do NOT need to install this mod to join and play!**
+> 
+> * **For Clients WITHOUT the mod (Vanilla):**
+>   * ✅ 100% full gameplay (<active gameplay features list>).
+>   * ℹ️ Visual fallback (<exact vanilla appearance, e.g. default yellow beam, standard HUD prompt>).
+> * **For Clients WITH the mod (Enhanced):**
+>   * ✅ Full gameplay + enhanced visuals (<enhanced visuals and sound cues list>).
+```
+
+*Invariant:* Keep the callout completely free of technical engine terminology (no mentions of Harmony, PUN 2, RPCs, shaders, or DLLs).
 
 ### 7.3 Release & Versioning Policy (`CHANGELOG.md` & SemVer Bumps)
 - **Semantic Versioning Standard (SemVer 2.0.0):** All mods adhere strictly to `MAJOR.MINOR.PATCH` (e.g. `1.0.4`):
@@ -304,11 +337,7 @@ Every mod repository maintains documentation tailored to two distinct audiences:
   - When publishing via `publish-mod.ps1` or `/publish`, the release version can be explicitly set (`-Version X.Y.Z`) or bumped (`-Bump major|minor|patch`).
   - If no argument is passed and the current manifest version is already tagged, the tool defaults to bumping `PATCH` for safety.
 
-2. **`ARCHITECTURE.md` (Developers & AI Agents):**
-   - **Audience:** Mod developers and AI coding agents.
-   - **Purpose:** Documents the internal mechanics: runtime data flow, Harmony patch targets, lifecycle hooks, network authority checks, and design rationale.
-
-### 7.3 Spec-driven development (Spec Kit)
+### 7.4 Spec-driven development (Spec Kit)
 
 When using Spec Kit for feature development in mod repositories:
 - `.specify/memory/constitution.md` serves as the non-negotiable governing law that binds Spec Kit to `RepoKit` standards (§6 Coding standards, §8 Testing tiers, and host-only authority).
