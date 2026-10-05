@@ -27,15 +27,35 @@ except ImportError as e:
     )
 
 
+def parse_time(val) -> float:
+    """Parses timestamps like '01:23', '85.5', or 10 into seconds."""
+    if val is None:
+        return 0.0
+    if isinstance(val, (int, float)):
+        return float(val)
+    s = str(val).strip()
+    if not s:
+        return 0.0
+    if ":" in s:
+        parts = s.split(":")
+        if len(parts) == 2:
+            return float(parts[0]) * 60 + float(parts[1])
+        elif len(parts) == 3:
+            return float(parts[0]) * 3600 + float(parts[1]) * 60 + float(parts[2])
+    return float(s)
+
+
 def convert_video_to_gif(
     video_path: Path,
     output_gif_path: Path,
     max_width: int = 600,
     fps: int = 12,
     start_time: float = 0.0,
-    max_duration: float = 10.0,
+    end_time: float | None = None,
+    trim_end: float = 0.0,
+    max_duration: float = 0.0,
 ) -> Path:
-    """Extracts frames from video, resizes, quantizes, and saves an optimized GIF."""
+    """Extracts frames from video, resizes, quantizes, and saves an optimized GIF with trimming."""
     if not video_path.is_file():
         raise FileNotFoundError(f"Input video not found: {video_path}")
 
@@ -47,24 +67,37 @@ def convert_video_to_gif(
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     orig_duration = total_frames / orig_fps
 
+    start_sec = max(0.0, parse_time(start_time))
+    
+    trim_end_sec = parse_time(trim_end)
+    if end_time is not None and parse_time(end_time) > 0:
+        end_sec = min(orig_duration, parse_time(end_time))
+    elif trim_end_sec > 0:
+        end_sec = max(start_sec, orig_duration - trim_end_sec)
+    else:
+        end_sec = orig_duration
+
+    dur_sec = parse_time(max_duration)
+    if dur_sec > 0:
+        end_sec = min(end_sec, start_sec + dur_sec)
+
+    start_frame = int(start_sec * orig_fps)
+    end_frame = min(total_frames, int(end_sec * orig_fps))
+    clip_duration = max(0.0, (end_frame - start_frame) / orig_fps)
+
     print(f"==> Video Info:")
     print(f"    Source   : {video_path.name}")
     print(f"    Duration : {orig_duration:.2f}s (Total frames: {total_frames}, FPS: {orig_fps:.1f})")
+    print(f"    Trim Range: {start_sec:.2f}s -> {end_sec:.2f}s (Clip length: {clip_duration:.2f}s)")
 
     # Calculate frame stepping to achieve target FPS
     step = max(1, round(orig_fps / fps))
-    start_frame = int(start_time * orig_fps)
-    end_frame = (
-        total_frames
-        if max_duration <= 0
-        else min(total_frames, int((start_time + max_duration) * orig_fps))
-    )
 
     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     current_frame = start_frame
     frames = []
 
-    print(f"==> Processing frames (Range: {start_time:.1f}s to {end_frame / orig_fps:.1f}s @ {fps} FPS)...")
+    print(f"==> Processing frames (@ {fps} FPS)...")
 
     while cap.isOpened() and current_frame < end_frame:
         ret, frame = cap.read()
@@ -230,16 +263,25 @@ def main():
     parser.add_argument(
         "-s",
         "--start",
-        type=float,
-        default=0.0,
-        help="Start time in seconds (default: 0.0).",
+        default="0",
+        help="Start timestamp in seconds or MM:SS (e.g. 2.5 or 0:02).",
+    )
+    parser.add_argument(
+        "-e",
+        "--end",
+        default=None,
+        help="End timestamp in seconds or MM:SS (e.g. 14.0 or 0:14).",
+    )
+    parser.add_argument(
+        "--trim-end",
+        default="0",
+        help="Seconds to cut off from the end of the video.",
     )
     parser.add_argument(
         "-d",
         "--max-duration",
-        type=float,
-        default=10.0,
-        help="Maximum duration in seconds to convert (default: 10.0, set 0 for full video).",
+        default="0",
+        help="Maximum duration in seconds (default: 0 for all until end).",
     )
     parser.add_argument(
         "--skip-readme",
@@ -271,6 +313,8 @@ def main():
         max_width=args.max_width,
         fps=args.fps,
         start_time=args.start,
+        end_time=args.end,
+        trim_end=args.trim_end,
         max_duration=args.max_duration,
     )
 

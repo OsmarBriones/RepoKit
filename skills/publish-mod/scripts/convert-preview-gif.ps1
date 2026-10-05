@@ -36,8 +36,10 @@ param(
     [string]$OutputGif = "assets/preview.gif",
     [int]$MaxWidth = 600,
     [int]$Fps = 12,
-    [double]$StartTime = 0.0,
-    [double]$MaxDuration = 10.0,
+    [string]$StartTime = "0",
+    [string]$EndTime = "",
+    [string]$TrimEnd = "0",
+    [string]$MaxDuration = "0",
     [switch]$SkipReadme
 )
 
@@ -65,9 +67,14 @@ $argsList = @(
     "-m", "`"$ModPath`"",
     "-w", "$MaxWidth",
     "-f", "$Fps",
-    "-s", "$StartTime",
-    "-d", "$MaxDuration"
+    "-s", "`"$StartTime`"",
+    "--trim-end", "`"$TrimEnd`"",
+    "-d", "`"$MaxDuration`""
 )
+
+if (-not [string]::IsNullOrWhiteSpace($EndTime)) {
+    $argsList += @("-e", "`"$EndTime`"")
+}
 
 if ($SkipReadme) {
     $argsList += "--skip-readme"
