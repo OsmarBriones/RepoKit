@@ -307,15 +307,16 @@ To balance user adoption with absolute clarity, mod packaging and documentation 
 | Scope Category | `manifest.json` Description Standard (< 250 chars) | `README.md` Callout Position & Tone |
 | :--- | :--- | :--- |
 | **Category 1 (True Host-Only)** | `<Summary>. Only Host, clients don't need it.` | Clear reassurance note at the top of the README stating friends can join completely vanilla. |
-| **Category 2 (Client-Synced)** | `<Summary>. Requires all players (Host and Clients) to install.` | `> [!IMPORTANT]` block at the top indicating the mod must be installed by all players due to custom assets, keybinds, or local UI. |
-| **Category 3 (Asymmetric Hybrid)** | `<Summary>. Only Host needed (clients can optionally install for <Specific Visuals/Audio>).` | Mandatory `> [!NOTE]` block directly after the title comparing Vanilla vs. Enhanced experience. |
+| **Category 2 (Client-Synced)** | `<Summary>. Requires all players (Host and Clients) to install.` | Standard `>` blockquote at the top indicating all players must install due to custom assets, keybinds, or local UI. |
+| **Category 3 (Asymmetric Hybrid)** | `<Summary>. Only Host needed (clients can optionally install for <Specific Visuals/Audio>).` | Mandatory `>` blockquote directly after the title comparing Vanilla vs. Enhanced experience. |
+
+*(Note on Thunderstore compatibility: Thunderstore uses standard CommonMark rather than GitHub Flavored Markdown Alerts. Do **not** prefix blockquotes with `[!NOTE]` or `[!IMPORTANT]`, as they will be rendered as raw literal text on Thunderstore.io. Use standard emoji headings inside `>` blockquotes instead).*
 
 #### Standard Callout Template for Category 3 Mods (`README.md`)
 
 Place this block directly below the title header and short summary:
 
 ```markdown
-> [!NOTE]
 > ### 👥 Multiplayer: Only Host Needed (Clients Optional)
 > **Your friends do NOT need to install this mod to join and play!**
 > 
