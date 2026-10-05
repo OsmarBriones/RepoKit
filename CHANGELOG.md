@@ -5,6 +5,10 @@
 - Added **Multiplayer Authority & Network Architecture Standards** in `REPO_MODS_METHODOLOGY.md` §6.2.2 and `RepoKit/skills/refine-mod-concept/SKILL.md`:
   - Formalized the 3-tier networking scope classification: Category 1 (True Host-Only), Category 2 (Client-Synced), and Category 3 (Asymmetric Hybrid / Graceful Degradation).
   - Instituted the mandatory **4-Question Network Feasibility Gate** (evaluating input hooks, native RPC serialization, state machine dimensionality, and unequip/drop lifecycle side-effects) to prevent desynchronization when designing Host-Only mods.
+- Enhanced **Pre-Release Approval Gate Media Audit & Gameplay GIF Automation** in `publish-mod` skill:
+  - Agents must visually render the mod's thumbnail (`icon.png`) in Markdown and audit/report the presence of a gameplay showcase GIF in `README.md` and repository before requesting release confirmation (`aprobado`).
+  - Added thumbnail metadata and gameplay GIF detection warning to `publish-mod.ps1` console summary.
+  - Added Python converter script `process-preview-gif.py` and PowerShell wrapper `convert-preview-gif.ps1` to convert `.mp4` gameplay recordings into optimized GIFs and automatically inject the `## Preview` section into `README.md`.
 - Added **Multiplayer Scope Disclosure Standards in `README.md` & `manifest.json`** in `REPO_MODS_METHODOLOGY.md` §7.2.1 and `refine-mod-concept` skill:
   - Established standardized description phrasing per scope category for `manifest.json` (< 250 chars).
   - Defined the mandatory GitHub alert callout template for Category 3 (Asymmetric Hybrid) mods in `README.md` comparing Vanilla client gameplay vs. Enhanced client audiovisuals without technical engine jargon.

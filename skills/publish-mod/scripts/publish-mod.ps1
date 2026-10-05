@@ -469,6 +469,32 @@ Write-Host "==> Verified packaged archive: $distZip" -ForegroundColor Green
 
 # 6.1 Pre-Release Approval Gate
 $tagName = "v$targetVersion"
+
+# Inspect thumbnail and gameplay GIF status
+$iconPath = Join-Path $resolvedPath "icon.png"
+$iconInfo = "Not found"
+if (Test-Path $iconPath) {
+    try {
+        Add-Type -AssemblyName System.Drawing
+        $img = [System.Drawing.Image]::FromFile($iconPath)
+        $iconInfo = "$($img.Width)x$($img.Height) px, $([math]::Round((Get-Item $iconPath).Length / 1KB, 1)) KB"
+        $img.Dispose()
+    } catch {
+        $iconInfo = "Present, $([math]::Round((Get-Item $iconPath).Length / 1KB, 1)) KB"
+    }
+}
+
+$gifFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter "*.gif" -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notmatch '[\\/](obj|bin|dist|\.git|external)[\\/]' }
+$readmeHasGif = (Test-Path $readmePath) -and ((Get-Content $readmePath -Raw -Encoding UTF8) -match '\.gif')
+$gifStatus = if ($gifFiles.Count -gt 0) {
+    "Found ($($gifFiles[0].Name))"
+} elseif ($readmeHasGif) {
+    "Found (referenced in README.md)"
+} else {
+    "[WARNING] NOT FOUND! (No gameplay GIF in repo or README)"
+}
+
 Write-Host ""
 Write-Host "================ PRE-RELEASE SUMMARY ================" -ForegroundColor Cyan
 Write-Host " Mod Name    : $modName" -ForegroundColor White
@@ -476,6 +502,12 @@ Write-Host " Version     : $targetVersion (Tag: $tagName)" -ForegroundColor Whit
 Write-Host " Description : $($manifest.description)" -ForegroundColor White
 Write-Host " Website URL : $($manifest.website_url)" -ForegroundColor White
 Write-Host " Categories  : $($categories -join ', ')" -ForegroundColor White
+Write-Host " Thumbnail   : $iconInfo" -ForegroundColor White
+if ($gifStatus -like "*WARNING*") {
+    Write-Host " Gameplay GIF: $gifStatus" -ForegroundColor Yellow
+} else {
+    Write-Host " Gameplay GIF: $gifStatus" -ForegroundColor Green
+}
 Write-Host " Package Zip : $distZip" -ForegroundColor White
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""

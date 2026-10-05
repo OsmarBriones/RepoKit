@@ -66,7 +66,10 @@ Before publishing any mod or pushing release tags, the agent MUST present all re
    - Manifest Description & Website URL
    - Promoted Changelog entries (`[Unreleased]` -> `[X.Y.Z]`)
    - Verified Categories (`categories.txt`)
-   - Thumbnail verification status (`icon.png`, 256x256)
+   - **Embedded Thumbnail Preview (`icon.png`):** Rendered visually directly in Markdown (`![Thumbnail](file:///path/to/icon.png)`) with dimensions (`256x256`), file size, and status note (custom mod artwork vs. procedural badge placeholder).
+   - **Gameplay GIF Showcase Status:** Active audit of whether a gameplay demonstration GIF is present in the repository (`assets/*.gif`, root `*.gif`) or linked inside `README.md`:
+     - *If present:* State the path or URL and render a preview (`![Gameplay Preview](file:///...)`).
+     - *If NOT detected:* Output a conspicuous callout: `⚠️ ALERTA: No se detectó ningún GIF demostrativo en README.md ni en assets/. (Recordatorio para grabar y adjuntar video demostrativo antes de publicar).`
    - Git Tag name and commit plan
    - Complete `README.md` content (rendered in a clean quote/preview block so the user can verify the exact player-facing presentation before publishing)
 
@@ -99,6 +102,36 @@ powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/publish-mod/scr
 - `-Bump`: Semantic version bump level: `patch` (default when current version is already tagged), `minor` (resets patch to 0), or `major` (resets minor and patch to 0).
 - `-SkipPush`: Prepares release, packages zip, and tags `vX.Y.Z` locally without pushing to GitHub.
 - `-LocalPublish`: Directly executes `tcli publish` on your local machine using `$env:THUNDERSTORE_TOKEN`.
+
+---
+
+## Gameplay Demo GIF Automation
+
+To convert a gameplay recording (`.mp4`) into an optimized GIF and automatically wire it into `README.md`:
+
+### PowerShell Wrapper:
+```powershell
+powershell -ExecutionPolicy Bypass -File external/RepoKit/skills/publish-mod/scripts/convert-preview-gif.ps1 `
+  -VideoPath "C:\path\to\gameplay_recording.mp4" `
+  -OutputGif "assets/preview.gif" `
+  -MaxWidth 600 `
+  -Fps 12 `
+  -MaxDuration 10
+```
+
+### Python Direct:
+```bash
+python external/RepoKit/skills/publish-mod/scripts/process-preview-gif.py \
+  -i "C:/path/to/gameplay_recording.mp4" \
+  -o "assets/preview.gif" \
+  -w 600 -f 12 -d 10
+```
+
+This script:
+1. Samples the video at 12 FPS and resizes to 600px width.
+2. Applies color palette quantization and dithering for high visual fidelity.
+3. Saves to `assets/preview.gif`.
+4. Automatically injects or updates a `## Preview` section in `README.md` with `![Gameplay Preview](assets/preview.gif)`.
 
 ---
 
