@@ -122,14 +122,42 @@ def update_readme_with_preview(mod_dir: Path, relative_gif_path: str):
     readme_path = mod_dir / "README.md"
     if not readme_path.is_file():
         print(f"    [WARN] No README.md found at {readme_path}. Skipping README setup.")
+def get_public_gif_url(mod_dir: Path, relative_gif_path: str) -> str:
+    """Resolves a permanent public raw GitHub URL for Thunderstore compatibility if git origin exists."""
+    try:
+        import subprocess
+        res = subprocess.run(
+            ["git", "-C", str(mod_dir), "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        url = res.stdout.strip()
+        match = re.search(r"github\.com[:/]([^/]+)/([^/.]+?)(?:\.git)?$", url)
+        if match:
+            user, repo = match.group(1), match.group(2)
+            # Normalize posix slashes for web URL
+            clean_path = Path(relative_gif_path).as_posix().lstrip("/")
+            return f"https://raw.githubusercontent.com/{user}/{repo}/master/{clean_path}"
+    except Exception:
+        pass
+    return relative_gif_path
+
+
+def update_readme_with_preview(mod_dir: Path, relative_gif_path: str, prefer_raw_url: bool = True):
+    """Inserts or updates the ## Preview section in README.md with the GIF."""
+    readme_path = mod_dir / "README.md"
+    if not readme_path.is_file():
+        print(f"    [WARN] No README.md found at {readme_path}. Skipping README setup.")
         return
 
+    target_url = get_public_gif_url(mod_dir, relative_gif_path) if prefer_raw_url else relative_gif_path
     content = readme_path.read_text(encoding="utf-8")
-    preview_tag = f"![Gameplay Preview]({relative_gif_path})"
+    preview_tag = f"![Gameplay Preview]({target_url})"
 
     # If already referenced, nothing to do
-    if relative_gif_path in content:
-        print(f"==> README.md already contains reference to {relative_gif_path}.")
+    if relative_gif_path in content or target_url in content:
+        print(f"==> README.md already contains reference to preview GIF.")
         return
 
     # Check if a ## Preview section already exists
@@ -160,7 +188,7 @@ def update_readme_with_preview(mod_dir: Path, relative_gif_path: str):
                 print("==> Prepended '## Preview' section to README.md.")
 
     readme_path.write_text(new_content, encoding="utf-8")
-    print(f"==> README.md successfully updated with gameplay preview.")
+    print(f"==> README.md successfully updated with gameplay preview ({target_url}).")
 
 
 def main():
