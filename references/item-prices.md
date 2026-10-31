@@ -2,6 +2,8 @@
 
 Documento de referencia canónico extraído directamente de los archivos de juego originales de **R.E.P.O.** (`resources.assets` y `sharedassets0.assets`), correspondiente a las clases `Item`, `ItemAttributes` y `ShopManager`.
 
+> **Verificado contra la actualización Sunstone (2026-10-30):** los precios de todos los objetos anteriores no cambiaron. Se añadieron `Item Gun Revolver`, `Item Melee Whip` e `Item Orb Battery`. Los dos primeros y el orbe tienen `status` distinto: `Gun Revolver` y `Orb Battery` figuran como WIP (`status: 0`) en el juego; `Melee Whip` está finalizado.
+
 ---
 
 ## 1. Mecánica de Precios en la Tienda (*Service Station*)
@@ -72,6 +74,7 @@ Los objetos del juego se clasifican en los siguientes niveles de valor base pred
 | **Gun Stun** | Pistola aturdidora | `Item Gun Stun` | `Medium+` | 3500 – 4500 | **$14K – $18K** |
 | **Gun Tranq** | Pistola tranquilizante | `Item Gun Tranq` | `Medium+` | 3500 – 4500 | **$14K – $18K** |
 | **Gun Handgun** | Pistola | `Item Gun Handgun` | `Medium++` | 4500 – 5000 | **$18K – $20K** |
+| **Gun Revolver** | Pistola humana (Human Gun) | `Item Gun Revolver` | `High` | 5500 – 7500 | **$22K – $30K** |
 | **Gun Laser** | Pistola láser (Photon Blaster) | `Item Gun Laser` | `High+` | 9500 – 12000 | **$38K – $48K** |
 | **Gun Shotgun** | Escopeta | `Item Gun Shotgun` | `High+` | 9500 – 12000 | **$38K – $48K** |
 
@@ -82,6 +85,7 @@ Los objetos del juego se clasifican en los siguientes niveles de valor base pred
 | **Melee Inflatable Hammer** | Martillo inflable | `Item Melee Inflatable Hammer` | `Medium` | 2000 – 3000 | **$8K – $12K** |
 | **Melee Frying Pan** | Sartén | `Item Melee Frying Pan` | `Medium+` | 3500 – 4500 | **$14K – $18K** |
 | **Melee Sword** | Espada | `Item Melee Sword` | `Medium++` | 4500 – 5000 | **$18K – $20K** |
+| **Melee Whip** | Cable de aventura humano (Human Adventure Cable) | `Item Melee Whip` | `Medium++` | 4500 – 5000 | **$18K – $20K** |
 | **Melee Stun Baton** | Bastón eléctrico | `Item Melee Stun Baton` | `High` | 5500 – 7500 | **$22K – $30K** |
 | **Melee Baseball Bat** | Bate de béisbol | `Item Melee Baseball Bat` | `High+` | 9500 – 12000 | **$38K – $48K** |
 | **Melee Sledge Hammer** | Mazo pesado | `Item Melee Sledge Hammer` | `High+` | 9500 – 12000 | **$38K – $48K** |
@@ -103,6 +107,7 @@ Los objetos del juego se clasifican en los siguientes niveles de valor base pred
 | **Drone Feather** | Dron pluma | `Item Drone Feather` | `Medium+` | 3500 – 4500 | **$14K – $18K** |
 | **Drone Indestructible** | Dron indestructible | `Item Drone Indestructible` | `High` | 5500 – 7500 | **$22K – $30K** |
 | **Drone Zero Gravity** | Dron gravedad cero | `Item Drone Zero Gravity` | `High` | 5500 – 7500 | **$22K – $30K** |
+| **Orb Battery** | Orbe de recarga (Recharge Orb) | `Item Orb Battery` | `High` | 5500 – 7500 | **$22K – $30K** |
 | **Orb Zero Gravity** | Orbe gravedad cero | `Item Orb Zero Gravity` | `High+` | 9500 – 12000 | **$38K – $48K** |
 
 ### Transporte y Carros
@@ -201,13 +206,16 @@ Los objetos del juego se clasifican en los siguientes niveles de valor base pred
 | **$14K – $18K** | **Staff Zero Gravity** (Bastón gravedad cero) | `Item Staff Zero Gravity` | Bastones (Staves) | `Medium+` | 3500 – 4500 |
 | **$18K – $20K** | **Gun Handgun** (Pistola) | `Item Gun Handgun` | Armas de Fuego | `Medium++` | 4500 – 5000 |
 | **$18K – $20K** | **Melee Sword** (Espada) | `Item Melee Sword` | Armas Cuerpo a Cuerpo (Melee) | `Medium++` | 4500 – 5000 |
+| **$18K – $20K** | **Melee Whip** (Cable de aventura humano) | `Item Melee Whip` | Armas Cuerpo a Cuerpo (Melee) | `Medium++` | 4500 – 5000 |
 | **$18K – $20K** | **Phase Bridge** (Puente de fase) | `Item Phase Bridge` | Herramientas y Utilidad | `Medium++` | 4500 – 5000 |
 | **$18K – $20K** | **Upgrade Player Tumble Climb** (Mejora trepar rodando) | `Item Upgrade Player Tumble Climb` | Mejoras de Jugador (Upgrades) | `Medium++` | 4500 – 5000 |
 | **$18K – $20K** | **Vehicle Semiscooter** (Semiscooter) | `Item Vehicle Semiscooter` | Transporte y Carros | `Medium++` | 4500 – 5000 |
 | **$18K – $20K** | **Vehicle Semiscooter Small** (Semiscooter pequeño) | `Item Vehicle Semiscooter Small` | Transporte y Carros | `Medium++` | 4500 – 5000 |
 | **$22K – $30K** | **Drone Indestructible** (Dron indestructible) | `Item Drone Indestructible` | Drones y Orbes | `High` | 5500 – 7500 |
 | **$22K – $30K** | **Drone Zero Gravity** (Dron gravedad cero) | `Item Drone Zero Gravity` | Drones y Orbes | `High` | 5500 – 7500 |
+| **$22K – $30K** | **Gun Revolver** (Pistola humana) | `Item Gun Revolver` | Armas de Fuego | `High` | 5500 – 7500 |
 | **$22K – $30K** | **Melee Stun Baton** (Bastón eléctrico) | `Item Melee Stun Baton` | Armas Cuerpo a Cuerpo (Melee) | `High` | 5500 – 7500 |
+| **$22K – $30K** | **Orb Battery** (Orbe de recarga) | `Item Orb Battery` | Drones y Orbes | `High` | 5500 – 7500 |
 | **$22K – $30K** | **Staff Torque** (Bastón torque) | `Item Staff Torque` | Bastones (Staves) | `High` | 5500 – 7500 |
 | **$22K – $30K** | **Staff Void** (Bastón del vacío) | `Item Staff Void` | Bastones (Staves) | `High` | 5500 – 7500 |
 | **$22K – $30K** | **WalkieTalkieBox** (Caja de walkie-talkies) | `Item WalkieTalkieBox` | Herramientas y Utilidad | `High` | 5500 – 7500 |

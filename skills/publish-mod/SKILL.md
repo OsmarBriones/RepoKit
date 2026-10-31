@@ -42,6 +42,7 @@ Before publishing via GitHub Actions for the first time, add your **Thunderstore
    - Verifies `icon.png` is exactly 256x256 pixels. If missing or invalid, automatically runs `generate-procedural-icon.ps1` to generate a high-contrast theme badge.
 2. **Manifest & README Validation:**
    - Ensures `website_url` is present in `manifest.json` (auto-detected from `git remote origin` if missing).
+   - Verifies `README.md` has at most one `## What's new` section and that it only lists changes from the last 7 days; remove stale entries before the approval gate (the script does not check this, the agent must).
    - Verifies `manifest.json` has a clear, informative `description` (< 250 characters).
    - Ensures `README.md` contains the mandatory `## Preview` (gameplay GIF), `## How to Use` (concise player instructions), and `## Issues & Bug Reports` sections.
 3. **Changelog Promotion (`CHANGELOG.md`):**
