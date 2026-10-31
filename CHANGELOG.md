@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- `scripts/check-submodule-drift.ps1` now flags a mod as a possible release only when files other than changelog, docs, agent guidance, submodule pointers and packaging config changed after its last tag, or when its `[Unreleased]` changelog section has entries.
 - Added **Commit and push policy** to `REPO_MODS_WORKSPACE.md`: commit and push verified changes to `master` by default (releases still need `aprobado`), submodules first, never force-push, and end each turn with a repository status line.
 - `scripts/check-submodule-drift.ps1` now also reports uncommitted files, unpushed commits and commits since the last tag per repository.
 - Added **RepoAPI reuse gate** to the "Before completion" checklist in `REPO_MODS_WORKSPACE.md`: every mod change must record whether its logic goes to `RepoAPI`, stays in the mod, or is listed under the new "Promotion candidates" table in `RepoAPI/README.md`.

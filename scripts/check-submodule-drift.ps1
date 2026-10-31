@@ -58,8 +58,26 @@ $state | Format-Table -AutoSize
 $pending = $state | Where-Object { $_.Uncommitted -gt 0 -or ($_.Unpushed -ne 0) }
 if ($pending) { Write-Host ("Work not on GitHub: {0}" -f (($pending | ForEach-Object Repo) -join ', ')) }
 else { Write-Host 'Work not on GitHub: none' }
-$release = $state | Where-Object { $_.CommitsSinceTag -is [int] -and $_.CommitsSinceTag -gt 0 }
-if ($release) { Write-Host ("Commits after last tag (possible release): {0}" -f (($release | ForEach-Object { "$($_.Repo) +$($_.CommitsSinceTag)" }) -join ', ')) }
+# A repo is a release candidate only when player-facing files changed after its last tag
+# (not just changelog, docs, submodule pointers, agent guidance or packaging config)
+# or when its CHANGELOG [Unreleased] section has entries.
+$ignored = '^(CHANGELOG\.md|README\.md|AGENTS\.md|CLAUDE\.md|GEMINI\.md|ARCHITECTURE\.md|\.gitignore|\.gitmodules|\.gitattributes|thunderstore\.toml|external/|\.github/|docs/|specs/)'
+$release = foreach ($row in $state | Where-Object { $_.CommitsSinceTag -is [int] -and $_.CommitsSinceTag -gt 0 }) {
+	$path = Join-Path $WorkspaceRoot $row.Repo
+	$files = @(git -C $path diff --name-only "$($row.LastTag)..HEAD") | Where-Object { $_ -notmatch $ignored }
+	$changelog = Join-Path $path 'CHANGELOG.md'
+	$unreleased = $false
+	if (Test-Path $changelog) {
+		$text = Get-Content $changelog -Raw
+		$unreleased = $text -match '(?ms)^## \[Unreleased\][ \t]*\r?\n(?<body>.*?)(?=^## |\z)' -and $Matches['body'].Trim().Length -gt 0
+	}
+	if ($files.Count -gt 0 -or $unreleased) {
+		$why = if ($files.Count -gt 0) { "$($files.Count) changed file(s)" } else { 'Unreleased notes' }
+		"$($row.Repo) +$($row.CommitsSinceTag) ($why)"
+	}
+}
+if ($release) { Write-Host ("Possible release: {0}" -f ($release -join ', ')) }
+else { Write-Host 'Possible release: none' }
 
 $noApi = Get-ChildItem $WorkspaceRoot -Directory | Where-Object {
 	(Test-Path (Join-Path $_.FullName '.git')) -and ($submodules -notcontains $_.Name) -and
