@@ -60,6 +60,7 @@ REPO_Mods/
 - **Testing**: follows the 3-tier strategy in `REPO_MODS_METHODOLOGY.md` §8 (Tier 1: decoupled unit tests via `dotnet test`, Tier 2: Harmony reflection contract verification, Tier 3: in-game smoke testing, with optional opt-in debug triggers disabled by default). The local execution workflow deploys via `PostBuild` to Steam and the **r2modman** `Debug` profile (`AppData\Roaming\r2modmanPlus-local\REPO\profiles\Debug\BepInEx\plugins`). A `Thunderstore Mod Manager` install also exists with a `Multimancos` profile for group multiplayer tests.
 - **Author identity vs. technical prefix:** The visible human developer author is **always** `Osmar Briones` (in `README.md` credits and `.csproj` `<Authors>`). The reverse-DNS prefix `com.osmar` is strictly reserved for technical identifiers (BepInEx plugin GUIDs `com.osmar.<ModName>`, config files `BepInEx/config/com.osmar.<ModName>.cfg`, and namespaces). Never put `com.osmar` as the author name in user-facing credits.
 - **Player-friendly `README.md` (Audience separation):** Thunderstore `README.md` is for players. Its `## Features` section must be gameplay-focused, describing what players see, do, and experience in clear, non-technical language. Never include internal Unity engine terms, hook/patch targets (`EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`), Harmony patch signatures, or code architecture; those belong strictly in `ARCHITECTURE.md`.
+- **Single, short-lived `## What's new` in README:** A mod's `README.md` has at most one `## What's new` section, listing only changes from the last 7 days; older entries are removed (see `REPO_MODS_METHODOLOGY.md` §7.2). Check and prune it on every release.
 - **Official Issue Reporting in README:** Every mod's `README.md` MUST include an `## Issues & Bug Reports` section directing players to report bugs and suggest features strictly through GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`).
 - **Changelog & Versioning Control:** During development or feature updates, agents MUST NOT automatically bump version numbers (`.csproj`, `manifest.json`, `PluginVersion`) or create new released version headings in `CHANGELOG.md`. Intermediate changes remain under an `## [Unreleased]` section until the developer explicitly requests a version bump and release.
 - **Informative Manifest Description & Host-Only Phrasing:** The `"description"` field in `manifest.json` MUST provide a clear, engaging 1-2 sentence description (< 250 chars) of the mod's gameplay functionality. When a mod requires only the host to install it and synchronizes across connected players automatically, standardise on the concise phrasing: `"Only Host, clients don't need it."` (e.g. `"Spawns rubber ducks in the truck and facility on level load. Fully configurable. Only Host, clients don't need it."`).
@@ -110,6 +111,10 @@ RepoKit provides shared skills to automate release packaging and asset preparati
 8. **`generate-test-battery` (`RepoKit/skills/generate-test-battery/SKILL.md`):**
    - Generates an actionable, comprehensive QA testing battery (Tier 1-3 protocol) on-demand by synthesizing existing specs, `ARCHITECTURE.md`, configuration files, and Harmony hooks.
    - Outputs an interactive checklist with baseline checks, core happy path walkthroughs, configuration boundary matrices, negative edge cases, multiplayer host/client authority checks, and log grep patterns.
+
+9. **`decompile-game` (`RepoKit/skills/decompile-game/SKILL.md`):**
+   - Refreshes the decompiled game source after a R.E.P.O. update using `ilspycmd`, diffs it against the previous version and lists which Harmony-patched types in the mods changed.
+   - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/decompile-game/scripts/decompile-game.ps1 [-DiffOnly]`
 
 ## Multi-agent coordination
 
@@ -170,14 +175,27 @@ While editing:
 Before completion:
 
 1. Check each touched repository independently, including submodule state.
+   Run `RepoKit/scripts/check-submodule-drift.ps1` to see which `RepoAPI` and
+   `RepoKit` revision each mod pins; report any consumer left behind.
 2. Build or otherwise validate every affected mod in proportion to the change.
-3. Update documentation in the same change whenever it has become inaccurate:
+3. **RepoAPI reuse gate.** For every new or changed piece of logic in the mod,
+   decide where it lives and state the decision in the completion summary:
+   - It goes to `RepoAPI` when another existing mod could call it unchanged
+     (item selection, weighting, probability rolls, item preservation,
+     networking helpers, generic config helpers).
+   - It stays in the mod when it depends on that mod's own config, tables or
+     behavior.
+   - If it stays but looks reusable later, add a line to `RepoAPI/README.md`
+     under "Promotion candidates" with the mod name and file.
+   Never finish a mod change without this decision on record, even when the
+   answer is "nothing is generic".
+4. Update documentation in the same change whenever it has become inaccurate:
    this file for workspace-wide facts, `REPO_MODS_METHODOLOGY.md` for conventions,
    `ARCHITECTURE.md` for runtime/design changes, and a mod's `README.md`,
    `CHANGELOG.md`, or local agent guidance when its behavior, use, build, or
    release information changed. Do not claim completion while known affected
    documentation is stale; explicitly state any deliberately deferred update.
-4. Summarize the cross-project impact: what was changed, which consumers and
+5. Summarize the cross-project impact: what was changed, which consumers and
    documents were checked or updated, and what (if anything) remains
    deliberately out of scope.
 

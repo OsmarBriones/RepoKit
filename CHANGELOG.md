@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Added **RepoAPI reuse gate** to the "Before completion" checklist in `REPO_MODS_WORKSPACE.md`: every mod change must record whether its logic goes to `RepoAPI`, stays in the mod, or is listed under the new "Promotion candidates" table in `RepoAPI/README.md`.
+- Added `scripts/check-submodule-drift.ps1`: read-only report of the `RepoAPI`/`RepoKit` revision each mod pins and how far behind `origin/master` it is.
+- Added README **`## What's new`** policy (`REPO_MODS_METHODOLOGY.md` §7.2, `REPO_MODS_WORKSPACE.md`, `publish-mod` skill): a single section, only changes from the last 7 days, pruned on every release.
+- Added `decompile-game` skill (`RepoKit/skills/decompile-game/SKILL.md`) and script `decompile-game.ps1`:
+  - Re-decompiles `Assembly-CSharp.dll` with `ilspycmd`, diffs it against the previous output and reports which Harmony-patched types used by the mods changed after a game update.
 - Added **Multiplayer Authority & Network Architecture Standards** in `REPO_MODS_METHODOLOGY.md` §6.2.2 and `RepoKit/skills/refine-mod-concept/SKILL.md`:
   - Formalized the 3-tier networking scope classification: Category 1 (True Host-Only), Category 2 (Client-Synced), and Category 3 (Asymmetric Hybrid / Graceful Degradation).
   - Instituted the mandatory **4-Question Network Feasibility Gate** (evaluating input hooks, native RPC serialization, state machine dimensionality, and unequip/drop lifecycle side-effects) to prevent desynchronization when designing Host-Only mods.
