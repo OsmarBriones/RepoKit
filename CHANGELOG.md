@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added **Commit and push policy** to `REPO_MODS_WORKSPACE.md`: commit and push verified changes to `master` by default (releases still need `aprobado`), submodules first, never force-push, and end each turn with a repository status line.
+- `scripts/check-submodule-drift.ps1` now also reports uncommitted files, unpushed commits and commits since the last tag per repository.
 - Added **RepoAPI reuse gate** to the "Before completion" checklist in `REPO_MODS_WORKSPACE.md`: every mod change must record whether its logic goes to `RepoAPI`, stays in the mod, or is listed under the new "Promotion candidates" table in `RepoAPI/README.md`.
 - Added `scripts/check-submodule-drift.ps1`: read-only report of the `RepoAPI`/`RepoKit` revision each mod pins and how far behind `origin/master` it is.
 - Added README **`## What's new`** policy (`REPO_MODS_METHODOLOGY.md` §7.2, `REPO_MODS_WORKSPACE.md`, `publish-mod` skill): a single section, only changes from the last 7 days, pruned on every release.

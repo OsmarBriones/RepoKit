@@ -199,6 +199,22 @@ Before completion:
    documents were checked or updated, and what (if anything) remains
    deliberately out of scope.
 
+## Commit and push policy
+
+Work must never be left only on the local machine.
+
+- After each logical, verified change, commit and push to `master` without
+  asking. Pushing publishes nothing; Thunderstore releases happen only through
+  the `publish-mod` skill and its typed `aprobado` gate.
+- Build the affected mod first. If the build fails, commit locally, do not push,
+  and say so.
+- Push shared submodules first (`RepoAPI`, `RepoKit`), then commit and push the
+  pointer bump in each consumer.
+- Never force-push, rewrite history or switch branches unless asked.
+- End every turn that touched repositories with a status line from
+  `RepoKit/scripts/check-submodule-drift.ps1`: repositories with uncommitted or
+  unpushed work, and mods with commits after their last tag (ready to release).
+
 ## Instruction-file maintenance
 
 - `REPO_MODS_WORKSPACE.md` is the single source of truth for workspace context.

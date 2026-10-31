@@ -6,7 +6,7 @@ param(
 	[switch]$NoFetch
 )
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue' # git writes expected errors to stderr (no tags, no upstream)
 $submodules = @('RepoAPI', 'RepoKit')
 
 function Get-Latest([string]$name) {
@@ -42,6 +42,24 @@ $rows | Sort-Object Submodule, Mod | Format-Table -AutoSize
 foreach ($name in $submodules) {
 	if ($latest[$name]) { Write-Host ("{0} latest: {1}" -f $name, $latest[$name].Substring(0, 7)) }
 }
+
+Write-Host "`nRepository state"
+$state = foreach ($repo in Get-ChildItem $WorkspaceRoot -Directory) {
+	if (-not (Test-Path (Join-Path $repo.FullName '.git'))) { continue }
+	$path = $repo.FullName
+	$dirty = @(git -C $path status --porcelain).Count
+	$upstream = git -C $path rev-parse --abbrev-ref '@{u}' 2>$null
+	$unpushed = if ($upstream) { [int](git -C $path rev-list --count "$upstream..HEAD") } else { 'no upstream' }
+	$tag = git -C $path describe --tags --abbrev=0 2>$null
+	$sinceTag = if ($tag) { [int](git -C $path rev-list --count "$tag..HEAD") } else { '-' }
+	[pscustomobject]@{ Repo = $repo.Name; Uncommitted = $dirty; Unpushed = $unpushed; LastTag = $tag; CommitsSinceTag = $sinceTag }
+}
+$state | Format-Table -AutoSize
+$pending = $state | Where-Object { $_.Uncommitted -gt 0 -or ($_.Unpushed -ne 0) }
+if ($pending) { Write-Host ("Work not on GitHub: {0}" -f (($pending | ForEach-Object Repo) -join ', ')) }
+else { Write-Host 'Work not on GitHub: none' }
+$release = $state | Where-Object { $_.CommitsSinceTag -is [int] -and $_.CommitsSinceTag -gt 0 }
+if ($release) { Write-Host ("Commits after last tag (possible release): {0}" -f (($release | ForEach-Object { "$($_.Repo) +$($_.CommitsSinceTag)" }) -join ', ')) }
 
 $noApi = Get-ChildItem $WorkspaceRoot -Directory | Where-Object {
 	(Test-Path (Join-Path $_.FullName '.git')) -and ($submodules -notcontains $_.Name) -and
