@@ -16,9 +16,11 @@ flowchart LR
     A["1. Check / Generate Icon (256x256)"] --> B["2. Validate Manifest & README"]
     B --> C["3. Promote CHANGELOG [Unreleased] -> [X.Y.Z]"]
     C --> D["4. Package Archive (package-mod.ps1)"]
-    D --> E["5. Commit & Tag Release (git tag vX.Y.Z)"]
-    E --> F["6. Push Tags to GitHub"]
-    F --> G["7. GitHub Action runs tcli publish"]
+    D --> H["5. Docs & freshness audit"]
+    H --> I["6. Approval gate: type aprobado"]
+    I --> E["7. Commit & Tag Release (git tag vX.Y.Z)"]
+    E --> F["8. Push + GitHub Release with the zip attached"]
+    F --> G["9. GitHub Action uploads the zip to Thunderstore"]
 ```
 
 ---
@@ -55,6 +57,11 @@ Before publishing via GitHub Actions for the first time, add your **Thunderstore
    - Automatically detects relevant Thunderstore category slugs (`mods`, `monsters`, `serverside`, `clientside`, `ai-generated`, `quality-of-life`, `weapons`, `items`, etc.) by analyzing code, architecture, and assets.
    - Saves them to `categories.txt` for transparent source control and passes them to GitHub Actions / `tcli` during publishing.
 
+7. **Documentation and Freshness Audit (non-blocking warnings, shown in the approval summary):**
+   - Warns when code files changed since the last tag but `README.md`, `ARCHITECTURE.md` or `AGENTS.md` were not touched, when `ARCHITECTURE.md` is missing, and when `## What's new` is duplicated or was not pruned.
+   - Warns when `external/RepoAPI` or `external/RepoKit` is behind `origin/master`, or the mod has no `external/RepoAPI` submodule.
+   - The script cannot judge whether the text is still true. Before asking for `aprobado`, the agent MUST read `README.md`, `ARCHITECTURE.md`, `AGENTS.md` and `manifest.json` against the code that changed since the last tag and either fix every stale statement (defaults, config keys, supported game version, behavior, version numbers, "not yet migrated" notes) or list the open items in the summary.
+
 ---
 
 ## Mandatory Pre-Publish Approval Gate (Written Confirmation)
@@ -67,6 +74,7 @@ Before publishing any mod or pushing release tags, the agent MUST present all re
    - Manifest Description & Website URL
    - Promoted Changelog entries (`[Unreleased]` -> `[X.Y.Z]`)
    - Verified Categories (`categories.txt`)
+   - Documentation and freshness audit result: every warning the script printed and how each was resolved or why it stays open
    - **Embedded Thumbnail Preview (`icon.png`):** Rendered visually directly in Markdown (`![Thumbnail](file:///path/to/icon.png)`) with dimensions (`256x256`), file size, and status note (custom mod artwork vs. procedural badge placeholder).
    - **Gameplay GIF Showcase Status:** Active audit of whether a gameplay demonstration GIF is present in the repository (`assets/*.gif`, root `*.gif`) or linked inside `README.md`:
      - *If present:* State the path or URL and render a preview (`![Gameplay Preview](file:///...)`).

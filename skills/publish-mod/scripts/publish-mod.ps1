@@ -467,6 +467,42 @@ if (-not (Test-Path $distZip)) {
 
 Write-Host "==> Verified packaged archive: $distZip" -ForegroundColor Green
 
+# 6.0 Documentation and freshness audit (non-blocking: warnings are shown in the summary)
+$auditWarnings = [System.Collections.Generic.List[string]]::new()
+$prevTag = & git -C $resolvedPath describe --tags --abbrev=0 2>$null
+$changedFiles = @()
+if ($prevTag) { $changedFiles += @(& git -C $resolvedPath diff --name-only "$prevTag..HEAD" 2>$null) }
+$changedFiles += @(& git -C $resolvedPath status --porcelain 2>$null | ForEach-Object { $_.Substring(3).Trim('"') })
+$changedFiles = @($changedFiles | Where-Object { $_ } | Sort-Object -Unique)
+$docPattern = '^(CHANGELOG\.md|README\.md|AGENTS\.md|CLAUDE\.md|GEMINI\.md|ARCHITECTURE\.md|\.gitignore|\.gitmodules|\.gitattributes|thunderstore\.toml|categories\.txt|manifest\.json|dist/|external/|\.github/|docs/|specs/)'
+$codeChanged = @($changedFiles | Where-Object { $_ -notmatch $docPattern -and $_ -match '\.(cs|csproj|props)$' })
+if ($codeChanged.Count -gt 0) {
+    foreach ($doc in @('README.md', 'ARCHITECTURE.md', 'AGENTS.md')) {
+        if (-not (Test-Path (Join-Path $resolvedPath $doc))) {
+            if ($doc -eq 'ARCHITECTURE.md') { $auditWarnings.Add("ARCHITECTURE.md does not exist.") }
+        } elseif ($changedFiles -notcontains $doc) {
+            $auditWarnings.Add("$($codeChanged.Count) code file(s) changed since $prevTag but $doc was not touched: confirm it is still accurate.")
+        }
+    }
+}
+$whatsNewCount = ([regex]::Matches($readmeContent, "(?im)^##\s+What'?s new\b")).Count
+if ($whatsNewCount -gt 1) { $auditWarnings.Add("README.md has $whatsNewCount '## What's new' sections; keep exactly one.") }
+if ($whatsNewCount -ge 1 -and $changedFiles -notcontains 'README.md') { $auditWarnings.Add("README.md has a '## What's new' section that was not updated or pruned for this release.") }
+foreach ($shared in @('RepoAPI', 'RepoKit')) {
+    $sharedPath = Join-Path $resolvedPath "external/$shared"
+    if (-not (Test-Path (Join-Path $sharedPath '.git'))) { continue }
+    & git -C $sharedPath fetch -q origin 2>$null
+    $behind = & git -C $sharedPath rev-list --count "HEAD..origin/master" 2>$null
+    if ($behind -and [int]$behind -gt 0) { $auditWarnings.Add("external/$shared is $behind commit(s) behind origin/master: decide whether to update the submodule before releasing.") }
+}
+if (-not (Test-Path (Join-Path $resolvedPath 'external/RepoAPI'))) { $auditWarnings.Add("No external/RepoAPI submodule: this mod has not been migrated to the workspace layout.") }
+if ($auditWarnings.Count -gt 0) {
+    Write-Host "==> Documentation and freshness audit found $($auditWarnings.Count) item(s):" -ForegroundColor Yellow
+    foreach ($w in $auditWarnings) { Write-Warning $w }
+} else {
+    Write-Host "==> Documentation and freshness audit: no items." -ForegroundColor Green
+}
+
 # 6.1 Pre-Release Approval Gate
 $tagName = "v$targetVersion"
 
@@ -509,6 +545,9 @@ if ($gifStatus -like "*WARNING*") {
     Write-Host " Gameplay GIF: $gifStatus" -ForegroundColor Green
 }
 Write-Host " Package Zip : $distZip" -ForegroundColor White
+if ($auditWarnings.Count -gt 0) {
+    Write-Host " Audit items : $($auditWarnings.Count) (see warnings above; resolve or justify before approving)" -ForegroundColor Yellow
+}
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
