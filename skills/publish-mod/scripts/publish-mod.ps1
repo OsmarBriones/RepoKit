@@ -469,7 +469,9 @@ Write-Host "==> Verified packaged archive: $distZip" -ForegroundColor Green
 
 # 6.0 Documentation and freshness audit (non-blocking: warnings are shown in the summary)
 $auditWarnings = [System.Collections.Generic.List[string]]::new()
-$prevTag = & git -C $resolvedPath describe --tags --abbrev=0 2>$null
+$auditEap = $ErrorActionPreference
+$ErrorActionPreference = 'Continue' # git writes expected errors to stderr (no tags yet, no upstream)
+$prevTag =& git -C $resolvedPath describe --tags --abbrev=0 2>$null
 $changedFiles = @()
 if ($prevTag) { $changedFiles += @(& git -C $resolvedPath diff --name-only "$prevTag..HEAD" 2>$null) }
 $changedFiles += @(& git -C $resolvedPath status --porcelain 2>$null | ForEach-Object { $_.Substring(3).Trim('"') })
@@ -496,6 +498,7 @@ foreach ($shared in @('RepoAPI', 'RepoKit')) {
     if ($behind -and [int]$behind -gt 0) { $auditWarnings.Add("external/$shared is $behind commit(s) behind origin/master: decide whether to update the submodule before releasing.") }
 }
 if (-not (Test-Path (Join-Path $resolvedPath 'external/RepoAPI'))) { $auditWarnings.Add("No external/RepoAPI submodule: this mod has not been migrated to the workspace layout.") }
+$ErrorActionPreference = $auditEap
 if ($auditWarnings.Count -gt 0) {
     Write-Host "==> Documentation and freshness audit found $($auditWarnings.Count) item(s):" -ForegroundColor Yellow
     foreach ($w in $auditWarnings) { Write-Warning $w }
