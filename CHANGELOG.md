@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- Fixed `publish-mod.ps1` aborting in the documentation audit on repositories without tags (`git describe` stderr was treated as a fatal error).
+- Fixed `publish-mod.ps1` aborting in the documentation audit on repositories without tags (`git describe` stderr was treated as a fatal error). The audit also compares only committed changes since the last tag, so the release version bump no longer counts as a code change, and it is skipped when there is no tag.
 - `publish-mod` now runs a documentation and freshness audit before the approval gate: warns about code changes without README/ARCHITECTURE/AGENTS updates, missing `ARCHITECTURE.md`, unpruned `## What's new`, and RepoAPI/RepoKit submodules behind `origin/master`; the agent must verify the docs against the code and report each item in the pre-release summary. The skill's pipeline diagram now matches the real order (approval gate, then tag, Release with zip, Actions upload).
 
 - `scripts/check-submodule-drift.ps1` now flags a mod as a possible release only when files other than changelog, docs, agent guidance, submodule pointers and packaging config changed after its last tag, or when its `[Unreleased]` changelog section has entries.

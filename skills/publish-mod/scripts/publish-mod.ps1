@@ -472,10 +472,10 @@ $auditWarnings = [System.Collections.Generic.List[string]]::new()
 $auditEap = $ErrorActionPreference
 $ErrorActionPreference = 'Continue' # git writes expected errors to stderr (no tags yet, no upstream)
 $prevTag =& git -C $resolvedPath describe --tags --abbrev=0 2>$null
+# Committed changes only: the version sync above edits the .csproj and *Plugin.cs of every release, which is not a code change.
 $changedFiles = @()
-if ($prevTag) { $changedFiles += @(& git -C $resolvedPath diff --name-only "$prevTag..HEAD" 2>$null) }
-$changedFiles += @(& git -C $resolvedPath status --porcelain 2>$null | ForEach-Object { $_.Substring(3).Trim('"') })
-$changedFiles = @($changedFiles | Where-Object { $_ } | Sort-Object -Unique)
+if ($prevTag) { $changedFiles = @(& git -C $resolvedPath diff --name-only "$prevTag..HEAD" 2>$null | Where-Object { $_ } | Sort-Object -Unique) }
+else { Write-Host "    No previous tag: skipping the code-versus-docs comparison." -ForegroundColor Gray }
 $docPattern = '^(CHANGELOG\.md|README\.md|AGENTS\.md|CLAUDE\.md|GEMINI\.md|ARCHITECTURE\.md|\.gitignore|\.gitmodules|\.gitattributes|thunderstore\.toml|categories\.txt|manifest\.json|dist/|external/|\.github/|docs/|specs/)'
 $codeChanged = @($changedFiles | Where-Object { $_ -notmatch $docPattern -and $_ -match '\.(cs|csproj|props)$' })
 if ($codeChanged.Count -gt 0) {
