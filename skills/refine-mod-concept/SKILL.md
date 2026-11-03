@@ -43,6 +43,7 @@ In each cycle, check if all of the following six dimensions have clear, concrete
   - **Category 1 (True Host-Only)**: Logic executed 100% on the MasterClient via vanilla game RPCs or object spawns. Vanilla clients connect without DLL. Manifest: `"Only Host, clients don't need it."`.
   - **Category 2 (Client-Synced)**: All players required. Mandatory if introducing custom keybinds/inputs, custom 3D models/bundles, custom UI/HUD canvas overlays, or local camera/audio mechanics.
   - **Category 3 (Asymmetric Hybrid)**: Mechanics run Host-Only for all players; modded clients receive enhanced audiovisual synchronization (custom shaders, colored beams, LEDs, localized UI labels).
+- **Minimum install footprint rule**: pick the scope with the fewest required installers, but only while a player without the mod loses something purely cosmetic. If they would lose anything functional (cannot trigger it, cannot see state they need, or a mechanic affecting them breaks), choose Category 2. Say which losses you judged cosmetic and which functional (see `REPO_MODS_METHODOLOGY.md` §6.2.2).
 - **The 4-Question Network Feasibility Gate (MANDATORY IF PROPOSING HOST-ONLY)**:
   1. *Does the trigger hook a client-held input (`heldByLocalPlayer` / `SemiFunc.InputDown`)?*
      If yes, the interaction must match native binary input states (e.g. alternating ON/OFF) or require the DLL on clients.
