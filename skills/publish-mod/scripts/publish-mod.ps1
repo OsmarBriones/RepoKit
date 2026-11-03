@@ -617,11 +617,14 @@ if (-not $SkipPush) {
     $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
     if ($ghCmd) {
         Write-Host "==> Ensuring GitHub Release $tagName exists with package asset..." -ForegroundColor Cyan
+        # The GitHub repo name can differ from the package name (e.g. REPO-<ModName>): take it from origin.
+        $originUrl = & git -C $resolvedPath config --get remote.origin.url 2>$null
+        $repoName = if ($originUrl -match 'github\.com[:/].+?/(.+?)(?:\.git)?$') { $Matches[1] } else { $modName }
         $relExists = $false
         try {
             $prevEap = $ErrorActionPreference
             $ErrorActionPreference = "SilentlyContinue"
-            $null = & gh release view $tagName --repo "OsmarBriones/$modName" 2>$null
+            $null = & gh release view $tagName --repo "OsmarBriones/$repoName" 2>$null
             if ($LASTEXITCODE -eq 0) {
                 $relExists = $true
             }
@@ -633,13 +636,13 @@ if (-not $SkipPush) {
 
         if ($relExists) {
             Write-Host "    GitHub Release $tagName already exists. Updating package asset..." -ForegroundColor Yellow
-            & gh release upload $tagName $distZip --clobber --repo "OsmarBriones/$modName"
+            & gh release upload $tagName $distZip --clobber --repo "OsmarBriones/$repoName"
         } else {
-            & gh release create $tagName $distZip --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$modName"
+            & gh release create $tagName $distZip --title "$modName $tagName" --notes-file $changelogPath --repo "OsmarBriones/$repoName"
         }
         Write-Host "==> SUCCESS: GitHub Release $tagName verified with package asset attached!" -ForegroundColor Green
         Write-Host "==> GitHub Actions is now publishing $modName $tagName to Thunderstore:" -ForegroundColor Green
-        Write-Host "    https://github.com/OsmarBriones/$modName/actions" -ForegroundColor Cyan
+        Write-Host "    https://github.com/OsmarBriones/$repoName/actions" -ForegroundColor Cyan
     } else {
         Write-Warning "gh CLI not found. To trigger automated Thunderstore publishing via GitHub Actions, install gh CLI or create release manually."
     }

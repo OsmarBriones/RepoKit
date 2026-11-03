@@ -63,14 +63,14 @@ $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'pow
 
 1. **Naming & Directory Verification:** Validates PascalCase name and ensures no duplicate folder exists in `REPO_Mods/`.
 2. **Template Verification:** Installs or updates the `dotnet new repo-mod` template from `repo_mod_template/`.
-3. **Scaffolding:** Runs `dotnet new repo-mod -n <ModName> -o <ModName>` and removes any leftover `.template.config`.
-4. **Manifest Synchronization:** Updates `manifest.json` (`name`, `version_number: 1.0.0`, `website_url: https://github.com/OsmarBriones/<ModName>`, `description`).
+3. **Scaffolding:** Runs `dotnet new repo-mod -n <ModName> -o REPO-<ModName>` (folder and GitHub repo are `REPO-<ModName>`) and removes any leftover `.template.config`.
+4. **Manifest Synchronization:** Updates `manifest.json` (`name`, `version_number: 1.0.0`, `website_url: https://github.com/OsmarBriones/REPO-<ModName>`, `description`).
 5. **README Synchronization:** Updates `# <ModName>` title and player-facing description.
 6. **Git Initialization:** Runs `git init -b master` and sets CRLF conventions.
 7. **Submodules:** Adds `external/RepoAPI` and `external/RepoKit` git submodules.
 8. **Initial Commit:** Commits scaffolded structure (`feat: initial mod structure from repo-mod template`).
 9. **GitHub Remote & Secrets:**
-   - Creates public repository: `gh repo create OsmarBriones/<ModName> --public --source=. --remote=origin --push`.
+   - Creates public repository: `gh repo create OsmarBriones/REPO-<ModName> --public --source=. --remote=origin --push` and adds the topics `repo-mod`, `bepinex`, `thunderstore`.
    - Automatically provisions `THUNDERSTORE_TOKEN` secret via `gh secret set` if `$env:THUNDERSTORE_TOKEN` is present.
 10. **Spec-Kit Setup:**
     - Runs `.specify/scripts/powershell/create-new-feature.ps1` to create `specs/001-<feature-short-name>/spec.md` and `.specify/feature.json`.
@@ -83,7 +83,7 @@ $ps = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'pow
 ## Phase 3: Transition to Spec-Kit
 
 After running the creation script, inform the user that the mod is initialized and guide them into Spec-Kit:
-- **Location:** `REPO_Mods/<ModName>/`
-- **GitHub:** `https://github.com/OsmarBriones/<ModName>`
+- **Location:** `REPO_Mods/REPO-<ModName>/`
+- **GitHub:** `https://github.com/OsmarBriones/REPO-<ModName>`
 - **Active Spec:** `specs/001-<feature-short-name>/spec.md`
 - **Next Command:** Suggest running `/speckit-plan` or `$speckit-tasks` inside the mod folder to begin technical planning and implementation.

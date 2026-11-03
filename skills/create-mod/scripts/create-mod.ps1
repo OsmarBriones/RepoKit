@@ -82,7 +82,9 @@ if ($ModName -notmatch '^[A-Z][a-zA-Z0-9]+$') {
     throw "ModName '$ModName' must be in PascalCase without spaces or special characters (e.g. LifeSteal, DucksEveryWhere)."
 }
 
-$targetPath = Join-Path $resolvedWorkspace $ModName
+# New repositories carry the REPO- prefix (folder and GitHub name); the package name stays $ModName.
+$RepoName = "REPO-$ModName"
+$targetPath = Join-Path $resolvedWorkspace $RepoName
 if (Test-Path $targetPath) {
     throw "Target directory already exists at: $targetPath"
 }
@@ -118,7 +120,7 @@ if (Test-Path $manifestPath) {
     $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
     $manifest.name = $ModName
     $manifest.version_number = "1.0.0"
-    $manifest.website_url = "https://github.com/OsmarBriones/$ModName"
+    $manifest.website_url = "https://github.com/OsmarBriones/$RepoName"
 
     if (-not [string]::IsNullOrWhiteSpace($Description)) {
         $manifest.description = $Description
@@ -167,13 +169,15 @@ Write-Host "==> Creating initial git commit..." -ForegroundColor Cyan
 if (-not $SkipGitHub) {
     $ghCmd = Get-Command "gh" -ErrorAction SilentlyContinue
     if ($ghCmd) {
-        Write-Host "==> Creating public GitHub repository OsmarBriones/$ModName..." -ForegroundColor Cyan
+        Write-Host "==> Creating public GitHub repository OsmarBriones/$RepoName..." -ForegroundColor Cyan
         try {
             # Create remote repo without direct --push to prevent OAuth workflow scope collisions
-            & gh repo create "OsmarBriones/$ModName" --public 2>$null | Out-Null
-            & git -C $targetPath remote add origin "https://github.com/OsmarBriones/$ModName.git" 2>$null | Out-Null
+            & gh repo create "OsmarBriones/$RepoName" --public 2>$null | Out-Null
+            & git -C $targetPath remote add origin "https://github.com/OsmarBriones/$RepoName.git" 2>$null | Out-Null
             & git -C $targetPath push -u origin master -q 2>$null | Out-Null
-            Write-Host "    Repository created and pushed at: https://github.com/OsmarBriones/$ModName" -ForegroundColor Green
+            Write-Host "    Repository created and pushed at: https://github.com/OsmarBriones/$RepoName" -ForegroundColor Green
+            # Group the repository with the other mods (topic filter: topic:repo-mod)
+            & gh repo edit "OsmarBriones/$RepoName" --add-topic repo-mod --add-topic bepinex --add-topic thunderstore 2>$null | Out-Null
         } catch {
             Write-Warning "Could not create or push to GitHub repo: $_"
         }
@@ -184,7 +188,7 @@ $ErrorActionPreference = $prevEa
         if (-not [string]::IsNullOrWhiteSpace($token)) {
             Write-Host "==> Provisioning THUNDERSTORE_TOKEN secret in GitHub repository..." -ForegroundColor Cyan
             try {
-                & gh secret set THUNDERSTORE_TOKEN --body "$token" --repo "OsmarBriones/$ModName"
+                & gh secret set THUNDERSTORE_TOKEN --body "$token" --repo "OsmarBriones/$RepoName"
                 Write-Host "    Secret THUNDERSTORE_TOKEN provisioned successfully." -ForegroundColor Green
             } catch {
                 Write-Warning "Could not set THUNDERSTORE_TOKEN secret: $_"
@@ -313,6 +317,6 @@ Write-Host ""
 Write-Host "==========================================================" -ForegroundColor Green
 Write-Host " Mod '$ModName' successfully created and configured!" -ForegroundColor Green
 Write-Host " Path:        $targetPath" -ForegroundColor Cyan
-Write-Host " GitHub:      https://github.com/OsmarBriones/$ModName" -ForegroundColor Cyan
+Write-Host " GitHub:      https://github.com/OsmarBriones/$RepoName" -ForegroundColor Cyan
 Write-Host " Ready for:   Spec-Kit (speckit-plan / speckit-tasks / speckit-implement)" -ForegroundColor Yellow
 Write-Host "==========================================================" -ForegroundColor Green

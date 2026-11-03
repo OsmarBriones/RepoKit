@@ -11,9 +11,10 @@ This document defines the standard architecture, folder layout, and conventions 
 ### 1.1 New Mod Initialization Protocol
 
 Whenever starting or initializing a new mod in this workspace:
-1. **Immediate Public Git Repository:** The **very first step** before writing feature code or logic is to initialize git and publish the repository publicly on GitHub (`https://github.com/OsmarBriones/<ModName>`) using GitHub CLI (`gh repo create OsmarBriones/<ModName> --public --source=. --remote=origin --push`) or git commands.
+1. **Immediate Public Git Repository:** The **very first step** before writing feature code or logic is to initialize git and publish the repository publicly on GitHub (`https://github.com/OsmarBriones/<RepoName>`) using GitHub CLI (`gh repo create OsmarBriones/<RepoName> --public --source=. --remote=origin --push`) or git commands. `<RepoName>` is `REPO-<ModName>` for every mod created from now on (the local folder uses the same name); the Thunderstore package name, assembly, namespace and plugin GUID stay `<ModName>`. Mods created before this rule keep their existing repository names.
+   - **Topics:** every repository of the workspace carries the GitHub topic `repo-mod` (mods also `bepinex` and `thunderstore`; `RepoAPI`, `RepoKit` and `repo_mod_template` also `repo-mod-tooling`). This groups them: `https://github.com/OsmarBriones?tab=repositories&q=topic%3Arepo-mod`. `create-mod` adds them automatically. A GitHub organization was considered and deliberately not adopted for now.
 2. **Automated Secret Provisioning:** If `$env:THUNDERSTORE_TOKEN` is set in the local environment, automatically upload the repository secret using GitHub CLI (`gh secret set THUNDERSTORE_TOKEN --body "$env:THUNDERSTORE_TOKEN"`).
-3. **Manifest Synchronization:** Set `"website_url": "https://github.com/OsmarBriones/<ModName>"` in `manifest.json` immediately upon creation.
+3. **Manifest Synchronization:** Set `"website_url": "https://github.com/OsmarBriones/<RepoName>"` in `manifest.json` immediately upon creation.
 4. **Submodule Setup:** Initialize and link `external/RepoAPI` and `external/RepoKit` git submodules.
 
 ## 2. Workspace layout
@@ -288,11 +289,11 @@ Every mod repository maintains documentation tailored to two distinct audiences:
 
 1. **`README.md` (Thunderstore Players):**
    - **Audience:** Players downloading and installing the mod from Thunderstore or mod managers (r2modman).
-   - **`## Preview` Section (Mandatory):** Visual demonstration GIF (hosted via GitHub Raw CDN at `https://raw.githubusercontent.com/OsmarBriones/<ModName>/master/assets/preview.gif`) showcasing core mechanics in action.
+   - **`## Preview` Section (Mandatory):** Visual demonstration GIF (hosted via GitHub Raw CDN at `https://raw.githubusercontent.com/OsmarBriones/<RepoName>/master/assets/preview.gif`) showcasing core mechanics in action.
    - **`## How to Use` Section (Mandatory):** Placed directly after `## Preview`, provides a crystal-clear, concise 3-4 bullet quick-start guide explaining how to activate, use, and recognize the mod's mechanics in gameplay without technical fluff.
    - **`## Features` Section:** Must be written entirely from the player's perspective, focusing on the gameplay experience, new capabilities, audiovisual effects, and balance changes in clear, accessible language.
    - **`## What's new` Section (Optional, single):** At most one section with this exact title (never versioned titles such as `What's new in v2.0`, and never more than one). It lists only changes released within the last 7 days, written for players; when it has nothing newer than a week, delete the section. Every release must prune stale entries before publishing. Lasting capabilities belong in `## Features`, and full history stays in `CHANGELOG.md`.
-   - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<ModName>/issues`).
+   - **`## Issues & Bug Reports` Section:** Mandatory section explicitly stating that bug reports and feature requests MUST be submitted via GitHub Issues (`https://github.com/OsmarBriones/<RepoName>/issues`).
    - **Strictly Prohibited in `README.md`:** Do **not** leak internal Unity engine terms, hook/patch target names (such as `EnemyDirector.Start`, `TruckSafetySpawnPoint`, `SemiFunc.OnLevelGenDone`, `RoundDirector`), Harmony patch signatures, class/method names, or code architecture details. Players care about what happens in the game, not which C# method is patched.
 
 2. **`ARCHITECTURE.md` (Developers & AI Agents):**
