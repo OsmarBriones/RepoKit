@@ -17,6 +17,7 @@ The agent carries **100% of the technical workload**. The human developer is a s
   - Which decompiled game methods to hook when reverse-engineering yields clear targets.
   - Standard compiler fixes, dependency inclusions in `.csproj`, or formatting.
   - Routine BepInEx configuration bindings and logging statements.
+- **The AI does NOT stop between phases** to ask for confirmation, to show intermediate results, or to review visual details. It runs the whole cycle end to end, fixes compiler and test errors itself, and only then reports. Checks that need the human in the game are collected into one checklist at the end (see "Develop continuously" in `REPO_MODS_WORKSPACE.md`).
 - **The AI ONLY consults the user** (`ask_question` tool or structured prompt) when:
   1. **Gameplay / Design Ambiguity:** A design choice has multiple viable directions that significantly alter game feel, difficulty, or multiplayer balance (e.g. *"Should holding the monster slow player movement by 30% or allow normal sprint?"*).
   2. **Scope Expansion:** A technical edge case requires introducing an entirely new mechanic outside `spec.md`.
