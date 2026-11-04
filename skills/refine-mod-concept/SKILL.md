@@ -69,6 +69,7 @@ In each cycle, check if all of the following six dimensions have clear, concrete
 - **Feedback fallback**: If no custom assets, what vanilla game audio/particles can be reused (via `SemiFunc`)?
 
 ### 5. Edge Cases & Safety Constraints
+- **Known pitfalls**: read `RepoKit/references/known-pitfalls.md` and raise every entry that could apply to this idea (for example, a mod that spawns items must plan a cap and cleanup of the game's item lists).
 - What if the player is downed or dead?
 - What if the enemy has 0 health remaining or is invulnerable?
 - Does it trigger on friendly fire / PvP damage?

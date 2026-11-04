@@ -82,7 +82,10 @@ The agent carries **100% of the technical workload**. The human developer is a s
 3. **RepoAPI Evaluation:**
    - Check if reusable modules exist in `external/RepoAPI/` (e.g. `Items/`, `Game/`).
    - If needed, include only the necessary source files in `<ModName>.csproj` via `<Compile Include="external\RepoAPI\..." />`.
-4. **Draft `plan.md`:**
+4. **Known Pitfalls Check:**
+   - Read `RepoKit/references/known-pitfalls.md` (`external/RepoKit/references/known-pitfalls.md` inside a mod).
+   - For every entry, record in `plan.md` (section "Known Pitfalls Check") whether it is relevant and, if so, the safeguard the design uses.
+5. **Draft `plan.md`:**
    - Architecture & Data Flow.
    - Exact Harmony Hook signatures (`[HarmonyPatch(typeof(...), nameof(...))]`).
    - BepInEx Configuration structure.
@@ -139,6 +142,7 @@ Systematically execute each task from `tasks.md`:
    dotnet build -c Release
    ```
    Both must succeed with **0 errors and 0 warnings**.
+   - **Known pitfalls gate:** re-read the entries marked relevant in `plan.md` and verify each safeguard exists in the code (and in a test or in-game check when possible). If a new problem showed up during development, add an entry to `known-pitfalls.md` in the same change.
 2. **Documentation Maintenance:**
    - Update `ARCHITECTURE.md`: Document newly created classes, runtime lifecycle hooks, and data flow.
    - Update `README.md`: Ensure `## Features` and `## Configuration` accurately reflect implemented settings without exposing internal Unity engine symbols.

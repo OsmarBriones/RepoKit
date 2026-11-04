@@ -40,7 +40,8 @@ REPO_Mods/
 │   │   ├── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
 │   │   └── develop-mod/        Autonomous Spec-Kit development loop & implementation
 │   ├── references/
-│   │   └── item-prices.md      canonical item shop prices & economic reference (59+ items)
+│   │   ├── item-prices.md      canonical item shop prices & economic reference (59+ items)
+│   │   └── known-pitfalls.md   problems that already happened in other mods; check it when planning and before finishing
 │   ├── VERSION.md
 │   └── CHANGELOG.md
 └── AGENTS.md / GEMINI.md / CLAUDE.md
@@ -201,6 +202,13 @@ Before completion:
 5. Summarize the cross-project impact: what was changed, which consumers and
    documents were checked or updated, and what (if anything) remains
    deliberately out of scope.
+6. **Known pitfalls gate.** Compare the change against
+   `RepoKit/references/known-pitfalls.md`, the list of problems that already
+   happened in other mods. Do it twice: while planning (record the result in
+   `plan.md`, section "Known Pitfalls Check") and before declaring the work
+   done. For each entry say `relevant` with the safeguard in place, or `not
+   relevant` with the reason, and verify the safeguards that apply. When a new
+   problem appears, add an entry to the list in the same change that fixes it.
 
 ## Commit and push policy
 
