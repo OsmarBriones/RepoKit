@@ -131,6 +131,9 @@ Systematically execute each task from `tasks.md`:
    - If compiler errors or warnings occur, resolve them autonomously (check namespaces, publicizer access, null safety).
 3. **Task Tracking:**
    - Mark completed items `[x]` in `tasks.md` as progress is made.
+4. **Pitfall candidates (automatic capture):**
+   - When a bug, surprise or failed assumption costs more than one build-and-fix cycle, was found by luck, or could silently affect players, add a one-line candidate to `research.md` (section "Pitfall candidates") **at that moment**, with the verdict of the filter in `RepoKit/references/known-pitfalls.md` ("What belongs here"): add, extend P-0XX, or skip with the reason.
+   - Do not record compiler errors, one-off logic bugs or cosmetic issues. Do not interrupt the user for this; it is part of the work.
 
 ---
 
@@ -142,7 +145,7 @@ Systematically execute each task from `tasks.md`:
    dotnet build -c Release
    ```
    Both must succeed with **0 errors and 0 warnings**.
-   - **Known pitfalls gate:** re-read the entries marked relevant in `plan.md` and verify each safeguard exists in the code (and in a test or in-game check when possible). If a new problem showed up during development, add an entry to `known-pitfalls.md` in the same change.
+   - **Known pitfalls gate:** re-read the entries marked relevant in `plan.md` and verify each safeguard exists in the code (and in a test or in-game check when possible). Then review the "Pitfall candidates" in `research.md`: every candidate with an "add" or "extend" verdict is written into `known-pitfalls.md` in the same change set (search for a duplicate first); "skip" candidates stay in `research.md`.
 2. **Documentation Maintenance:**
    - Update `ARCHITECTURE.md`: Document newly created classes, runtime lifecycle hooks, and data flow.
    - Update `README.md`: Ensure `## Features` and `## Configuration` accurately reflect implemented settings without exposing internal Unity engine symbols.

@@ -2,11 +2,36 @@
 
 Problems that have already cost time in R.E.P.O. mods. Compare every new mod or feature against this list **while planning** and again **before declaring it done**, and note which entries were relevant. An entry that does not apply is fine; one that applies and was ignored is not.
 
+## What belongs here (and what does not)
+
+The list only works if it stays short and every entry is worth reading. Add an entry only when **both** parts are true:
+
+1. **It is worth remembering**, at least one of:
+   - **Hard to notice:** it fails silently or late (no error, no log, wrong data in a save, an effect on a different feature) and was found only by investigation or by luck.
+   - **Critical:** data loss, a corrupted or ever-growing save, a crash, a desync between players, or something that could affect a release.
+   - **Recurring:** it happened in more than one mod, or in the same mod more than once.
+   - **Costly to rediscover:** the cause was non-obvious and took real investigation (more than a build-and-fix cycle).
+2. **It can be acted on:** it generalizes beyond a single bug in a single file, and there is a concrete safeguard or check to write down.
+
+Do **not** add:
+- Errors the compiler or the tests already report (typos, a missing reference, a nullable warning).
+- A one-off logic bug in a mod's own code, or a layout and cosmetic issue.
+- Anything already enforced by a test, a build step or a rule elsewhere (point to it instead).
+- A guess that was not verified. Mark uncertain causes as such, or leave the entry out.
+
+Before adding, search the list: if the new case is the same root cause as an existing entry, **extend that entry** (a new "Seen in" mod, a sharper check) instead of creating one. When a game update fixes a problem for good, mark the entry `Status: obsolete (fixed in <version>)` rather than silently deleting it.
+
+## How entries get captured during development
+
+1. **Trigger:** whenever a bug, a surprise or a failed assumption costs more than one build-and-fix cycle, or is found by luck, or could silently affect players, write it down as a **candidate** in the feature's `research.md`, section "Pitfall candidates": one line saying what happened and the verdict of the filter above (add / extend P-0XX / skip, with the reason). Do this at the moment it happens, not at the end.
+2. **Promotion:** at the quality gate, every candidate whose verdict is "add" or "extend" is written into this file, in the same change set as the mod, with the template below. Candidates marked "skip" stay in `research.md` as history.
+3. **Review:** the gate also re-reads the list against the finished work (see below), so an entry created now protects the next feature.
+
 ## How to use this list
 
 1. **Plan:** read the whole list. In `plan.md` (section "Known Pitfalls Check") and in the completion summary, write one line per entry: `relevant` with the safeguard you chose, or `not relevant` with the reason.
 2. **Before finishing:** re-read the entries marked relevant and verify the safeguard exists in the code and, when possible, in a test or in-game check.
-3. **After any new problem:** add an entry using the template at the bottom, in the same change that fixes it. Keep entries short and concrete.
+3. **After any new problem:** apply the filter above; if it passes, add or extend an entry with the template at the bottom, in the same change that fixes it. Keep entries short and concrete.
 
 Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we know, and how sure we are), **Avoid it** (the safeguard), **Check** (how to verify it), **Seen in** (where it happened).
 
@@ -55,6 +80,14 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Avoid it:** remove it from the haul list when hiding, guard `AddToDollarHaulList`, and refuse to hide objects that are `committedToExtraction`. Disabling the colliders also empties the room list, which vanilla uses to remove it.
 - **Check:** hide a valuable inside the zone and confirm `inHaulList` is false, then restore it and confirm it is counted again (done for Pockets with the spike tools, see its `research.md`).
 - **Seen in:** Pockets.
+
+## P-006: Hard-coded lists of game content go stale with every game update
+
+- **Symptom:** a design or a table assumed the game's content (29 Tiny valuables) and the Sunstone update had already added six more, so six valuables had no assigned effect and no icon. Nothing failed: the new content was simply ignored.
+- **Cause:** lists of items, valuables, enemies or levels copied from an earlier version of the game's assets are never refreshed automatically.
+- **Avoid it:** after each game update, re-extract and diff the content lists (`decompile-game` skill and `repo_assets_extracted_*`), derive tables from the game's own data at runtime when possible, and give anything unassigned a safe default (do nothing) instead of an error.
+- **Check:** compare the mod's tables against the current extracted assets; for icons, re-run the icon baker and look for valuables without a packaged icon in the log (`Icon for <name>: rendered/generic`).
+- **Seen in:** Pockets and the PocketTalismans concept.
 
 ---
 

@@ -208,7 +208,7 @@ Before completion:
    `plan.md`, section "Known Pitfalls Check") and before declaring the work
    done. For each entry say `relevant` with the safeguard in place, or `not
    relevant` with the reason, and verify the safeguards that apply. When a new
-   problem appears, add an entry to the list in the same change that fixes it.
+   problem appears, record it as a candidate in the feature's `research.md` as it happens, and at the gate promote to the list only what passes the filter in the list's "What belongs here" (hard to notice, critical, recurring or costly to rediscover, and actionable); extend an existing entry instead of duplicating it.
 
 ## Commit and push policy
 
