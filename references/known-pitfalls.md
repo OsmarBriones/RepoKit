@@ -89,6 +89,14 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Check:** compare the mod's tables against the current extracted assets; for icons, re-run the icon baker and look for valuables without a packaged icon in the log (`Icon for <name>: rendered/generic`).
 - **Seen in:** Pockets and the PocketTalismans concept.
 
+## P-007: Switching a mod off mid-session strands the state it was holding
+
+- **Symptom:** with Pockets switched off through the config menu, valuables that were hidden in pockets could no longer be taken out, and anything stored in that slot afterwards was lost. Nothing logged an error.
+- **Cause:** the mod's patches stopped acting on `Enabled = false`, but the state the mod owned (hidden objects, registry entries, an occupied slot) was still there and nothing returned it. Config values can change at any time (config menus, `ConfigFile.Reload`), not only at startup.
+- **Avoid it:** any mod that holds game objects or player state must give them back when it is disabled (react to the entry's `SettingChanged`), and keep the "give back" paths working whatever the switch says; the switch should only gate acquiring new state. Never discard the player's items as a cleanup.
+- **Check:** switch the mod off in game with state held (valuables in pockets, an active effect) and confirm everything is returned intact and normal vanilla behavior resumes.
+- **Seen in:** Pockets. Applies to TalismanCore and any mod with persistent effects.
+
 ---
 
 ## Template for a new entry
