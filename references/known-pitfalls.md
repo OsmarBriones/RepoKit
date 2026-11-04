@@ -65,12 +65,12 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Check:** unit tests accept 0 and negative keys; test with two objects in singleplayer.
 - **Seen in:** Pockets.
 
-## P-004: A running game locks the deployed DLL
+## P-004: A running game can keep the old DLL (locked file, or code already in memory)
 
-- **Symptom:** `dotnet build` succeeds but the post-build copy fails with exit code 4 (warning MSB3073) and the old DLL stays in the Steam and r2modman folders, so testing silently uses stale code.
-- **Cause:** the game keeps `Pockets.dll` open while it runs.
-- **Avoid it:** close the game before building, and after building compare the deployed DLL with `bin/<Configuration>/net48` (`cmp`). Remember Debug and Release both deploy: the last build wins.
-- **Check:** the deployed DLL matches the intended build before asking someone to test.
+- **Symptom:** `dotnet build` succeeds but the post-build copy sometimes fails with exit code 4 (warning MSB3073) and the old DLL stays in the Steam and r2modman folders. Even when the copy succeeds, a game that is already open keeps running the old code, so testing silently uses stale code.
+- **Cause:** while the game runs it may keep `Pockets.dll` open (the copy then fails; it did not fail on every attempt, so do not rely on either outcome), and an assembly already loaded is never replaced until the game restarts.
+- **Avoid it:** close the game before building and restart it after; never assume a build reached the game. After building, compare the deployed DLLs with `bin/<Configuration>/net48` (hash or `cmp`; the Debug and Release outputs differ and both deploy, the last build wins), and only then ask for an in-game test.
+- **Check:** the deployed DLL hash matches the intended build and the game was started after the copy.
 - **Seen in:** Pockets.
 
 ## P-005: Valuables and hidden objects interact with extraction rooms
