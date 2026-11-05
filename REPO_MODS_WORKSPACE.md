@@ -38,7 +38,8 @@ REPO_Mods/
 │   │   ├── publish-mod/        Changelog promotion, git tag & automated publish
 │   │   ├── refine-mod-concept/ Cyclical concept refinement & scoping
 │   │   ├── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
-│   │   └── develop-mod/        Autonomous Spec-Kit development loop & implementation
+│   │   ├── develop-mod/        Autonomous Spec-Kit development loop & implementation
+│   │   └── deploy-device/      Deploy builds to another test machine over SSH and read its log
 │   ├── references/
 │   │   ├── item-prices.md      canonical item shop prices & economic reference (59+ items)
 │   │   └── known-pitfalls.md   problems that already happened in other mods; check it when planning and before finishing
@@ -119,6 +120,10 @@ RepoKit provides shared skills to automate release packaging and asset preparati
 9. **`decompile-game` (`RepoKit/skills/decompile-game/SKILL.md`):**
    - Refreshes the decompiled game source after a R.E.P.O. update using `ilspycmd`, diffs it against the previous version and lists which Harmony-patched types in the mods changed.
    - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/decompile-game/scripts/decompile-game.ps1 [-DiffOnly]`
+
+10. **`deploy-device` (`RepoKit/skills/deploy-device/SKILL.md`):**
+   - Deploys mod builds to another Windows machine on the local network over key-based SSH, prepares it (r2modman, profile), verifies each file by hash and fetches its BepInEx log, so a tester only has to open the game. Devices are registered in a per-user file outside the repositories (`<user profile>\.repo-mods\devices.json`), and the one-time device setup is run by the human, as administrator, on the device.
+   - Scripts: `RepoKit/skills/deploy-device/scripts/{register-device,prepare-device,deploy-device,get-device-log}.ps1` and `setup-device.ps1` (run on the device).
 
 ## Multi-agent coordination
 
