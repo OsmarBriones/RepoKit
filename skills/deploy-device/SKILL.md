@@ -42,7 +42,7 @@ It never publishes anything and never touches Thunderstore. It only writes into 
    powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/register-device.ps1 -PrintBootstrap
    ```
    (If there is no SSH key yet, create one first with `ssh-keygen -t ed25519`.)
-2. **Device, as administrator, in PowerShell:** paste that one command. It downloads `setup-device.ps1` and runs it: installs the OpenSSH server for key logins only, turns passwords off, authorizes your key, opens port 22 for the local subnet on Private networks only, makes PowerShell the SSH shell, installs r2modman if missing (winget) and finally prints a line starting with `REPO-DEVICE-CODE:`. To read the script before running it, download it first (the controller prints that variant too).
+2. **Device, as administrator, in PowerShell:** paste that one command. It downloads `setup-device.ps1` and runs it (the command is for PowerShell, not cmd): installs the OpenSSH server for key logins only, turns passwords off, authorizes your key, opens port 22 for the local subnet on Private networks only, makes PowerShell the SSH shell, installs r2modman if missing (winget) and finally prints a line starting with `REPO-DEVICE-CODE:`. To read the script before running it, download it first (the controller prints that variant too).
 3. **Controller:** register from that line and prepare everything in one go.
    ```powershell
    powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/register-device.ps1 -Code "REPO-DEVICE-CODE:..." -Name laptop -Prepare

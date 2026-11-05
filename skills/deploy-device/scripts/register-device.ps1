@@ -51,9 +51,10 @@ function Get-ControllerPublicKey {
 
 if ($PrintBootstrap) {
     $publicKey = Get-ControllerPublicKey
-    Write-Host 'Run this ONCE on the new device, in an administrator PowerShell (it installs the SSH server for key logins, r2modman if missing, and prints a code):' -ForegroundColor Cyan
+    Write-Host 'Paste this ONCE on the new device, in an administrator PowerShell window (not cmd) (it installs the SSH server for key logins, r2modman if missing, and prints a code):' -ForegroundColor Cyan
     Write-Host ''
-    Write-Host ("powershell -NoProfile -ExecutionPolicy Bypass -Command `"iwr '{0}' -OutFile `$env:TEMP\setup-device.ps1; & `$env:TEMP\setup-device.ps1 -PublicKey '{1}' -InstallR2Modman`"" -f $setupUrl, $publicKey)
+    # Pasted into an administrator PowerShell. A variable holds the path, so a user name with spaces cannot break it.
+    Write-Host ("`$f = Join-Path `$env:TEMP 'setup-device.ps1'; iwr '{0}' -OutFile `$f; & powershell -NoProfile -ExecutionPolicy Bypass -File `$f -PublicKey '{1}' -InstallR2Modman" -f $setupUrl, $publicKey)
     Write-Host ''
     Write-Host 'To read the script before running it, download it first and open it:' -ForegroundColor DarkGray
     Write-Host ("  iwr '{0}' -OutFile `"`$env:TEMP\setup-device.ps1`"" -f $setupUrl) -ForegroundColor DarkGray
