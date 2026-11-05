@@ -173,14 +173,33 @@ function Invoke-DeviceScript {
 }
 
 function Test-DeviceConnection {
+    # Tries the device's host name and its alternate addresses; remembers the one that works.
     param([Parameter(Mandatory)]$Device)
-    try {
-        $out = Invoke-DeviceCommand $Device "'ok:' + `$env:COMPUTERNAME"
-        return [pscustomobject]@{ Ok = $true; Message = ($out -join ' ').Trim() }
+
+    $original = $Device.HostName
+    $candidates = @($original)
+    if ($Device.PSObject.Properties.Name -contains 'Alternates') { $candidates += @($Device.Alternates) }
+    if ($Device.Transport -eq 'local') { $candidates = @('local') }
+    $lastMessage = ''
+
+    foreach ($candidate in ($candidates | Where-Object { $_ } | Select-Object -Unique)) {
+        $Device.HostName = $candidate
+        try {
+            $out = Invoke-DeviceCommand $Device "'ok:' + `$env:COMPUTERNAME"
+            if ($candidate -ne $original) {
+                $stored = @(Get-AllDevices)
+                foreach ($entry in $stored) { if ($entry.Name -eq $Device.Name) { $entry.HostName = $candidate } }
+                Save-AllDevices $stored
+            }
+            return [pscustomobject]@{ Ok = $true; Message = ($out -join ' ').Trim() }
+        }
+        catch {
+            $lastMessage = $_.Exception.Message
+        }
     }
-    catch {
-        return [pscustomobject]@{ Ok = $false; Message = $_.Exception.Message }
-    }
+
+    $Device.HostName = $original
+    return [pscustomobject]@{ Ok = $false; Message = $lastMessage }
 }
 
 function Get-FileSha256 {

@@ -35,21 +35,23 @@ It never publishes anything and never touches Thunderstore. It only writes into 
 - Installing r2modman on a device is an explicit step (`prepare-device.ps1 -InstallR2Modman`). The default source is winget (`ebkr.r2modman`); the GitHub installer is used only with `-AllowDownload`.
 - Say what a command will change on the device before running anything that is not read-only.
 
-## One-time setup of a new device
+## One-time setup of a new device (three steps, one of them on the device)
 
-1. **Register it** (on the controller):
+1. **Controller:** print the single command for the new device.
    ```powershell
-   powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/register-device.ps1 -Name laptop -HostName <name-or-ip> -User <windows-user>
+   powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/register-device.ps1 -PrintBootstrap
    ```
-   It saves the device and prints two commands for the device (download `setup-device.ps1`, run it with your public key). If no SSH key exists, create one first with `ssh-keygen -t ed25519`.
-2. **On the device, as administrator:** run those two commands. The script installs the OpenSSH server, turns passwords off, authorizes the key, opens port 22 for the local subnet on Private networks, makes PowerShell the SSH shell and prints the host name, IP and user to use.
-3. **Prepare it** (controller):
+   (If there is no SSH key yet, create one first with `ssh-keygen -t ed25519`.)
+2. **Device, as administrator, in PowerShell:** paste that one command. It downloads `setup-device.ps1` and runs it: installs the OpenSSH server for key logins only, turns passwords off, authorizes your key, opens port 22 for the local subnet on Private networks only, makes PowerShell the SSH shell, installs r2modman if missing (winget) and finally prints a line starting with `REPO-DEVICE-CODE:`. To read the script before running it, download it first (the controller prints that variant too).
+3. **Controller:** register from that line and prepare everything in one go.
    ```powershell
-   powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/prepare-device.ps1 -Name laptop -InstallR2Modman
+   powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/register-device.ps1 -Code "REPO-DEVICE-CODE:..." -Name laptop -Prepare
    ```
-   It checks the game (Steam), r2modman and the profile, installs r2modman if missing, and lists what is left.
-4. **On the device, once:** open r2modman, choose R.E.P.O., create the profile named in the registry (`Debug` by default). r2modman installs BepInEx into it by itself. Install R.E.P.O. from Steam first if needed. These two items cannot be automated from here.
-5. `prepare-device.ps1 -Name laptop` again should say the device is ready.
+   The code carries the computer name, user and IP addresses, so nothing is typed by hand; the device keeps the addresses as fallbacks if its IP changes. `-Prepare` checks the game, installs r2modman if it is still missing and **creates the r2modman profile on the device from this machine's own BepInEx files** (`prepare-device.ps1 -SeedProfile`; BepInEx core only, none of your mods).
+
+What cannot be automated from here: installing **R.E.P.O. through Steam** on the device, and, in case r2modman does not list the seeded profile, opening r2modman once on the device to choose R.E.P.O. (or to create the profile there by hand; r2modman then installs BepInEx itself). `prepare-device.ps1` tells you which of these is still pending.
+
+Manual variant (no code): `register-device.ps1 -Name laptop -HostName <name-or-ip> -User <windows-user>`.
 
 ## Every deploy
 
@@ -76,13 +78,13 @@ It copies the device's `LogOutput.log` here, prints the matching lines and the s
 |---------|--------------|
 | `Cannot reach` | The one-time setup was not done, the machines are on different networks, or the device's network is not marked Private. |
 | `Permission denied (publickey)` | The controller's public key is not authorized on the device; run `setup-device.ps1` again with the right key. |
-| `profile-missing` | Create the r2modman profile on the device (step 4). |
+| `profile-missing` | Run `prepare-device.ps1 -Name <device> -SeedProfile`, or create the profile by hand in r2modman on the device. |
 | `HASH DIFFERS` | The copy was corrupted or the file was replaced; deploy again. |
 | `The game is running` | Close the game on the device, or use `-Force` and restart it. |
 
 ## What is verified and what is not
 
-The scripts were run end to end against a **simulated device** (a folder on the controller, `-Transport local`): registry, status, deploy with hash verification, config backup and log fetch. **Not yet run against a real second machine:** the SSH/scp transport, `setup-device.ps1`, the r2modman installation and r2modman picking up a profile it has just created. Treat the first real device as the test of those parts and record any problem in `references/known-pitfalls.md` if it passes the filter there.
+The scripts were run end to end against a **simulated device** (a folder on the controller, `-Transport local`): registry, status, deploy with hash verification, config backup and log fetch. **Not yet run against a real second machine:** the SSH/scp transport, `setup-device.ps1`, the r2modman installation and r2modman picking up a profile that was seeded from outside. The registration code (decode, fallback addresses, bad input) and the profile seeding were also tested on the simulated device. Treat the first real device as the test of those parts and record any problem in `references/known-pitfalls.md` if it passes the filter there.
 
 ## Testing the scripts without a second machine
 

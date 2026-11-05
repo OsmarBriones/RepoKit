@@ -13,12 +13,17 @@
     -Remove undoes it: stops and disables the server, deletes the firewall rule and removes the authorized key.
     Read the script before running it.
 
-.PARAMETER PublicKey  The controller's public key line (from register-device.ps1).
-.PARAMETER Remove     Undo the setup.
+.PARAMETER PublicKey         The controller's public key line (from register-device.ps1).
+.PARAMETER InstallR2Modman   Also install r2modman (official winget package) when it is missing.
+.PARAMETER Remove            Undo the setup.
+
+    At the end it prints one line starting with "REPO-DEVICE-CODE:" that describes this machine (name, user, addresses).
+    Paste that line to the controller: register-device.ps1 -Code <line> registers the device without typing anything else.
 #>
 [CmdletBinding()]
 param(
     [string]$PublicKey = '',
+    [switch]$InstallR2Modman,
     [switch]$Remove
 )
 
@@ -115,11 +120,39 @@ Restart-Service sshd
 $staging = Join-Path $env:USERPROFILE 'repo-deploy'
 if (-not (Test-Path $staging)) { New-Item -ItemType Directory -Path $staging -Force | Out-Null }
 
+# 8. r2modman (optional, official winget package)
+if ($InstallR2Modman) {
+    $r2Paths = @((Join-Path $env:LOCALAPPDATA 'Programs\r2modman\r2modman.exe'), (Join-Path $env:LOCALAPPDATA 'Programs\r2modman-desktop\r2modman.exe'))
+    $r2Present = $false
+    foreach ($candidate in $r2Paths) { if (Test-Path $candidate) { $r2Present = $true } }
+    if ($r2Present) {
+        Write-Host 'r2modman is already installed.'
+    }
+    elseif (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host 'Installing r2modman (winget, package ebkr.r2modman)...'
+        & winget install --id ebkr.r2modman --exact --silent --accept-package-agreements --accept-source-agreements | Out-Null
+    }
+    else {
+        Write-Host 'winget is not available on this machine: install r2modman by hand from https://github.com/ebkr/r2modmanPlus/releases' -ForegroundColor Yellow
+    }
+}
+
 $addresses = @(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } | ForEach-Object { $_.IPAddress })
 Write-Host ''
 Write-Host 'Done. Use these values on the controller (register-device.ps1):' -ForegroundColor Green
 Write-Host ("  -HostName  {0}  (or one of: {1})" -f $env:COMPUTERNAME, ($addresses -join ', '))
 Write-Host ("  -User      {0}" -f $env:USERNAME)
+$codeJson = ConvertTo-Json -Compress -InputObject ([pscustomobject]@{
+    name      = $env:COMPUTERNAME
+    user      = $env:USERNAME
+    addresses = @($addresses)
+    port      = 22
+})
+$code = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($codeJson))
+Write-Host ''
+Write-Host 'Give this line to the controller (register-device.ps1 -Code ...):' -ForegroundColor Cyan
+Write-Host "REPO-DEVICE-CODE:$code"
+
 $nonPrivate = Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.NetworkCategory -ne 'Private' }
 if ($nonPrivate) {
     Write-Host ''
