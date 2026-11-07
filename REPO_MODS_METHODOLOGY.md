@@ -215,7 +215,7 @@ Choose the scope that makes the fewest players install the mod, **but only while
 - they cannot see state they need in order to play (for example an inventory they must manage),
 - or a mechanic that affects them does not work on their machine.
 
-Examples: `EnemyDrops` stays host-only, because clients without it only miss cosmetic details. `Pockets` and the talisman family are Category 2: storing a valuable is triggered by the player's own slot key and the pocket must be visible in their slot, so a vanilla client would face invisible occupied slots and silent conflicts. Decide this during `refine-mod-concept`, and record which losses were judged cosmetic.
+Examples: `EnemyDrops` stays host-only, because clients without it only miss cosmetic details. `Pockets` and the charm family are Category 2: storing a valuable is triggered by the player's own slot key and the pocket must be visible in their slot, so a vanilla client would face invisible occupied slots and silent conflicts. Decide this during `refine-mod-concept`, and record which losses were judged cosmetic.
 
 #### The 4-Question Network Feasibility Gate (Mandatory before coding Host-Only mods)
 

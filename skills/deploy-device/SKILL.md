@@ -59,7 +59,7 @@ Manual variant (no code): `register-device.ps1 -Name laptop -HostName <name-or-i
 powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/deploy-device.ps1 -Name laptop -ModPath REPO-Pockets
 ```
 
-- Builds each `-ModPath` (Release by default, `-Configuration Debug`, or `-NoBuild`), uploads the DLLs with a hash manifest, copies them into the profile's `BepInEx\plugins`, and **verifies the hash on the device**. Several mods: `-ModPath REPO-Pockets,REPO-TalismanCore`.
+- Builds each `-ModPath` (Release by default, `-Configuration Debug`, or `-NoBuild`), uploads the DLLs with a hash manifest, copies them into the profile's `BepInEx\plugins`, and **verifies the hash on the device**. Several mods: `-ModPath REPO-Pockets,REPO-CharmCore`.
 - `-ConfigFile <file.cfg>` places a config in `BepInEx\config` (an existing one is backed up first), for example to enable a test option.
 - If the game is running on the device it stops, because a running game may block the copy and always keeps the old code in memory (known pitfall P-004). `-Force` copies anyway and tells you to restart the game.
 - When it says *Deployed*, the human only has to open the game from r2modman on the device.

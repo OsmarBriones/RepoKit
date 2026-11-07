@@ -87,7 +87,7 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Cause:** lists of items, valuables, enemies or levels copied from an earlier version of the game's assets are never refreshed automatically.
 - **Avoid it:** after each game update, re-extract and diff the content lists (`decompile-game` skill and `repo_assets_extracted_*`), derive tables from the game's own data at runtime when possible, and give anything unassigned a safe default (do nothing) instead of an error.
 - **Check:** compare the mod's tables against the current extracted assets; for icons, re-run the icon baker and look for valuables without a packaged icon in the log (`Icon for <name>: rendered/generic`).
-- **Seen in:** Pockets and the PocketTalismans concept.
+- **Seen in:** Pockets and the PocketCharms concept.
 
 ## P-007: Switching a mod off mid-session strands the state it was holding
 
@@ -95,7 +95,7 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Cause:** the mod's patches stopped acting on `Enabled = false`, but the state the mod owned (hidden objects, registry entries, an occupied slot) was still there and nothing returned it. Config values can change at any time (config menus, `ConfigFile.Reload`), not only at startup.
 - **Avoid it:** any mod that holds game objects or player state must give them back when it is disabled (react to the entry's `SettingChanged`), and keep the "give back" paths working whatever the switch says; the switch should only gate acquiring new state. Never discard the player's items as a cleanup.
 - **Check:** switch the mod off in game with state held (valuables in pockets, an active effect) and confirm everything is returned intact and normal vanilla behavior resumes.
-- **Seen in:** Pockets. Applies to TalismanCore and any mod with persistent effects.
+- **Seen in:** Pockets. Applies to CharmCore and any mod with persistent effects.
 
 ---
 
