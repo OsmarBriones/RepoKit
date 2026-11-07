@@ -69,6 +69,37 @@ if (Test-Path $pluginsDir) {
     }
 }
 
+# Mods that r2modman knows about (mods.yml) and whether their files are on disk, active or disabled (.old).
+$installedMods = @()
+$modsFile = Join-Path $profileDir 'mods.yml'
+if (Test-Path $modsFile) {
+    $blocks = [regex]::Split([IO.File]::ReadAllText($modsFile), '(?m)^(?=- manifestVersion)') | Where-Object { $_.Trim().Length -gt 0 }
+    foreach ($block in $blocks) {
+        $nameMatch = [regex]::Match($block, '(?m)^  name:\s*(.+?)\s*$')
+        if (-not $nameMatch.Success) { continue }
+        $modName = $nameMatch.Groups[1].Value
+        $versionMatch = [regex]::Match($block, '(?ms)versionNumber:\s*\r?\n\s+major:\s*(\d+)\s*\r?\n\s+minor:\s*(\d+)\s*\r?\n\s+patch:\s*(\d+)')
+        $files = 0
+        $disabledFiles = 0
+        foreach ($kind in 'plugins', 'patchers', 'monomod') {
+            $folder = Join-Path $profileDir ("BepInEx\{0}\{1}" -f $kind, $modName)
+            if (Test-Path $folder) {
+                foreach ($file in Get-ChildItem -Path $folder -Recurse -File -ErrorAction SilentlyContinue) {
+                    if ($file.Extension -in '.dll', '.old') { $files++ }
+                    if ($file.Extension -eq '.old') { $disabledFiles++ }
+                }
+            }
+        }
+        $installedMods += [pscustomobject]@{
+            name     = $modName
+            version  = $(if ($versionMatch.Success) { '{0}.{1}.{2}' -f $versionMatch.Groups[1].Value, $versionMatch.Groups[2].Value, $versionMatch.Groups[3].Value } else { '' })
+            enabled  = ($block -notmatch '(?m)^  enabled:\s*false')
+            files    = $files
+            disabledFiles = $disabledFiles
+        }
+    }
+}
+
 $result = [pscustomobject]@{
     computer       = $env:COMPUTERNAME
     user           = $env:USERNAME
@@ -77,6 +108,8 @@ $result = [pscustomobject]@{
     gamePath       = $gamePath
     gameInstalled  = [bool]$gamePath
     gameRunning    = [bool](Get-Process -Name 'REPO' -ErrorAction SilentlyContinue)
+    r2modmanRunning = [bool](Get-Process -Name 'r2modman' -ErrorAction SilentlyContinue)
+    installedMods  = $installedMods
     r2modmanPath   = $r2modmanPath
     r2modmanReady  = [bool]$r2modmanPath
     wingetPresent  = [bool](Get-Command winget -ErrorAction SilentlyContinue)
