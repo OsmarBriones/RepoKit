@@ -64,6 +64,20 @@ powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/de
 - If the game is running on the device it stops, because a running game may block the copy and always keeps the old code in memory (known pitfall P-004). `-Force` copies anyway and tells you to restart the game.
 - When it says *Deployed*, the human only has to open the game from r2modman on the device.
 
+## Installing the general helper mods (REPOLib, config menus, admin menus...)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/sync-mods.ps1 -Name laptop -WhatIf   # preview
+powershell -ExecutionPolicy Bypass -File RepoKit/skills/deploy-device/scripts/sync-mods.ps1 -Name laptop
+```
+
+- Copies every Thunderstore mod of this machine's profile (`-SourceProfile`, default `Debug`) into the device's profile: the mod's folders under `BepInEx`, its r2modman package cache (icon) and its `mods.yml` entry. Mods already on the device are replaced by this machine's version.
+- **Deprecated mods are skipped**, detected with the Thunderstore API (`-IncludeDeprecated` to copy them anyway, `-ExcludeMod Author-Name` to skip others). If a copied mod lists a skipped mod as a dependency it is reported (a deprecated mod can be an empty transition package whose real code lives in its replacement; check before worrying).
+- **Disabled mods stay disabled**: their files keep r2modman's `.old` suffix and their entry keeps `enabled: false`.
+- It refuses to run while r2modman or the game is open on the device (r2modman rewrites its mod list when it closes); close them, or use `-Force`.
+- Mod configuration files are not copied; each mod generates its own. Your own dev builds are plain DLLs deployed with `deploy-device.ps1`; they are not part of this.
+- Verified on a real device (2026-11-06): eight mods copied, the two disabled ones still disabled, file counts and `.old` files identical to this machine, `mods.yml` flags correct.
+
 ## After the test
 
 ```powershell
