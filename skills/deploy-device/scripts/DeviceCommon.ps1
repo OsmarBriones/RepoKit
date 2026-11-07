@@ -163,7 +163,9 @@ function Invoke-DeviceScript {
             $parts += ("-{0} '{1}'" -f $key, ([string]$value -replace "'", "''"))
         }
     }
-    $command = "& (Join-Path `$env:USERPROFILE '{0}\{1}') {2}" -f $script:StagingFolderName, $ScriptName, ($parts -join ' ')
+    # Windows blocks unsigned scripts by default (execution policy Restricted), so run the file through a child
+    # PowerShell with the policy bypassed for that process only; nothing is changed on the device.
+    $command = "& powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ((Join-Path `$env:USERPROFILE '{0}\{1}')) {2}" -f $script:StagingFolderName, $ScriptName, ($parts -join ' ')
     $output = Invoke-DeviceCommand $Device $command
 
     $text = ($output -join "`n").Trim()

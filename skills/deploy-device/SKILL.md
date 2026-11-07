@@ -76,6 +76,7 @@ It copies the device's `LogOutput.log` here, prints the matching lines and the s
 
 | Symptom | Likely cause |
 |---------|--------------|
+| `running scripts is disabled` | Old versions of these scripts; update RepoKit. They now bypass the execution policy for their own process. |
 | `Cannot reach` | The one-time setup was not done, the machines are on different networks, or the device's network is not marked Private. |
 | `Permission denied (publickey)` | The controller's public key is not authorized on the device; run `setup-device.ps1` again with the right key. |
 | `profile-missing` | Run `prepare-device.ps1 -Name <device> -SeedProfile`, or create the profile by hand in r2modman on the device. |
@@ -84,7 +85,9 @@ It copies the device's `LogOutput.log` here, prints the matching lines and the s
 
 ## What is verified and what is not
 
-The scripts were run end to end against a **simulated device** (a folder on the controller, `-Transport local`): registry, status, deploy with hash verification, config backup and log fetch. **Not yet run against a real second machine:** the SSH/scp transport, `setup-device.ps1`, the r2modman installation and r2modman picking up a profile that was seeded from outside. The registration code (decode, fallback addresses, bad input) and the profile seeding were also tested on the simulated device. Treat the first real device as the test of those parts and record any problem in `references/known-pitfalls.md` if it passes the filter there.
+- **Verified on a real second machine (2026-11-06):** the registration code, the key-based SSH connection, `setup-device.ps1`, `prepare-device.ps1` (game and r2modman detection, profile creation with `-SeedProfile`), and `deploy-device.ps1` with hash verification (the deployed DLL hash matched the build). The first real run also exposed that Windows blocks unsigned scripts by default; remote scripts are now run through a child PowerShell with the execution policy bypassed for that process only.
+- **Verified only on the simulated device (`-Transport local`):** the config backup and the log fetch.
+- **Not yet verified:** that r2modman lists and launches a profile created by `-SeedProfile` (open r2modman on the device once and check); the winget install path when r2modman is missing; the `-Remove` undo.
 
 ## Testing the scripts without a second machine
 
