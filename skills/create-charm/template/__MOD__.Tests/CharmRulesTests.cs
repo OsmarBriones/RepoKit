@@ -56,6 +56,7 @@ public class CharmRulesTests
 	{
 		string readme = File.ReadAllText(Path.Combine(Root, "README.md"));
 		Assert.IsTrue(readme.Contains("DebugMode"), "README.md must document the Debug section and DebugMode.");
+		Assert.IsTrue(readme.Contains("SpawnNow"), "README.md must document the Debug.SpawnNow switch.");
 	}
 
 	[TestMethod]
@@ -64,6 +65,7 @@ public class CharmRulesTests
 		string[] batteries = Directory.GetFiles(Path.Combine(Root, "specs"), "qa-battery.md", SearchOption.AllDirectories);
 		Assert.IsTrue(batteries.Length > 0, "specs/<feature>/qa-battery.md is missing.");
 		Assert.IsTrue(batteries.Any(path => File.ReadAllText(path).Contains("DebugMode")), "The QA battery must explain how to test with DebugMode.");
+		Assert.IsTrue(batteries.Any(path => File.ReadAllText(path).Contains("SpawnNow")), "The QA battery must explain the Debug.SpawnNow switch.");
 	}
 
 	private static IEnumerable<string> ModSources()

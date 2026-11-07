@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Standardised the `Debug.SpawnNow` switch for every charm: CharmCore binds it with `DebugMode` and, while a level runs and `DebugMode` is on, places the charm's valuable near the player when it is turned on, then turns it off (the charm's config file is re-read about once a second, so editing the file or using an in-game config menu both work). The `create-charm` template (README, QA battery) and its `CharmRulesTests` now require `SpawnNow` to be documented, so new charms cannot skip it.
+
 - Fixed `create-mod.ps1` writing the Spec-Kit feature folder into whichever repository was the current folder when it ran (it now runs the Spec-Kit script from the new repository). Found while creating 17 charm repositories from inside a sibling repository.
 
 - Added the **configuration types gate**: every configuration variable is analysed before it is added (type, unit, valid values) and numeric settings must declare an `AcceptableValueRange`/`AcceptableValueList`. New `scripts/check-config-types.ps1` audits any mod or the whole workspace (errors for numeric settings without a range, review notes for unclear types and for ranges that start below zero, opt-out with `// config-range-ok: <reason>`); `publish-mod` runs it and blocks a release on errors; the plan template has a "Configuration Types Check" section and the tasks template a T011 gate; `develop-mod` and `REPO_MODS_WORKSPACE.md` document it; new pitfall P-009. Charm mods get a `ConfigRulesTests` test that runs the script. The first audit of the workspace found one real gap (RepoAPI `ModConfig` item weights), now limited to 0..12.

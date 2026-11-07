@@ -11,10 +11,10 @@ Use this skill for every new `Charm<Valuable>` mod of the PocketCharms family (s
 
 Every charm mod:
 
-1. **Derives from `CharmCore.Api.Charm` and registers with `CharmsApi.Register`.** That binds `Enabled`, `WearPercent`, `CooldownSeconds` and the **`Debug.DebugMode`** setting for free. CharmCore does the rest of debug mode: with it on, the charm's valuable is placed on the floor in front of the player at the start of each level (any level; prefabs are in Resources).
+1. **Derives from `CharmCore.Api.Charm` and registers with `CharmsApi.Register`.** That binds `Enabled`, `WearPercent`, `CooldownSeconds` and the **`Debug.DebugMode`** and **`Debug.SpawnNow`** settings for free. CharmCore does the rest of debug mode: with `DebugMode` on, the charm's valuable is placed on the floor in front of the player at the start of each level (any level; prefabs are in Resources), and the `SpawnNow` switch places one more near the player at any moment while a level runs (it turns itself back off; host or singleplayer only). Nothing else is needed in the charm mod: do not write your own spawn code.
 2. **Writes debug detail only through `Charm.LogDebug(...)`**, never through the plugin logger. The plugin class may log startup lines. This keeps normal play quiet and puts the detail behind `DebugMode`.
 3. **Depends on Pockets and CharmCore** in `manifest.json`, and is Category 2 (everyone installs).
-4. **Documents `DebugMode` in `README.md`** and starts its **QA battery with a debug-mode quick start**.
+4. **Documents `DebugMode` and `SpawnNow` in `README.md`** and starts its **QA battery with a debug-mode quick start that mentions both**.
 5. **Uses `AddSetting` for any extra number** so the host's value applies to everyone.
 6. **Has a game-contract test** listing every game member its effect reads, writes or patches.
 
