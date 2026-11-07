@@ -82,10 +82,12 @@ The agent carries **100% of the technical workload**. The human developer is a s
 3. **RepoAPI Evaluation:**
    - Check if reusable modules exist in `external/RepoAPI/` (e.g. `Items/`, `Game/`).
    - If needed, include only the necessary source files in `<ModName>.csproj` via `<Compile Include="external\RepoAPI\..." />`.
-4. **Known Pitfalls Check:**
+4. **Configuration Types Check:**
+   - For every configuration variable you are about to add, decide type, unit and valid values (can it be negative? is 0 meaningful? is there a sensible maximum?) and record them in `plan.md` (section "Configuration Types Check"). Numeric settings must declare an `AcceptableValueRange`/`AcceptableValueList` and the code clamps the value again where it is used (values also arrive from the network or are computed). Verify with `external/RepoKit/scripts/check-config-types.ps1`; `publish-mod` blocks a release when it reports errors.
+5. **Known Pitfalls Check:**
    - Read `RepoKit/references/known-pitfalls.md` (`external/RepoKit/references/known-pitfalls.md` inside a mod).
    - For every entry, record in `plan.md` (section "Known Pitfalls Check") whether it is relevant and, if so, the safeguard the design uses.
-5. **Draft `plan.md`:**
+6. **Draft `plan.md`:**
    - Architecture & Data Flow.
    - Exact Harmony Hook signatures (`[HarmonyPatch(typeof(...), nameof(...))]`).
    - BepInEx Configuration structure.

@@ -498,6 +498,19 @@ foreach ($shared in @('RepoAPI', 'RepoKit')) {
     if ($behind -and [int]$behind -gt 0) { $auditWarnings.Add("external/$shared is $behind commit(s) behind origin/master: decide whether to update the submodule before releasing.") }
 }
 if (-not (Test-Path (Join-Path $resolvedPath 'external/RepoAPI'))) { $auditWarnings.Add("No external/RepoAPI submodule: this mod has not been migrated to the workspace layout.") }
+
+# 6.0.1 Configuration types gate (blocking): every numeric setting must declare the values it accepts.
+$configCheck = Join-Path $resolvedPath 'external/RepoKit/scripts/check-config-types.ps1'
+if (Test-Path $configCheck) {
+    Write-Host "==> Checking configuration types (numeric settings need a value range)..." -ForegroundColor Cyan
+    $psExe = if (Get-Command pwsh -ErrorAction SilentlyContinue) { 'pwsh' } else { 'powershell' }
+    & $psExe -ExecutionPolicy Bypass -File $configCheck -Path $resolvedPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Configuration types check failed: add an AcceptableValueRange to the settings listed above (or justify one with a 'config-range-ok:' comment) before releasing."
+    }
+} else {
+    $auditWarnings.Add("external/RepoKit has no scripts/check-config-types.ps1: update the RepoKit submodule so the configuration types check can run.")
+}
 $ErrorActionPreference = $auditEap
 if ($auditWarnings.Count -gt 0) {
     Write-Host "==> Documentation and freshness audit found $($auditWarnings.Count) item(s):" -ForegroundColor Yellow

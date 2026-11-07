@@ -220,6 +220,7 @@ Before completion:
    done. For each entry say `relevant` with the safeguard in place, or `not
    relevant` with the reason, and verify the safeguards that apply. When a new
    problem appears, record it as a candidate in the feature's `research.md` as it happens, and at the gate promote to the list only what passes the filter in the list's "What belongs here" (hard to notice, critical, recurring or costly to rediscover, and actionable); extend an existing entry instead of duplicating it.
+7. **Configuration types gate.** Every configuration variable is analysed before it is added: type, unit, valid values (can it be negative? is 0 meaningful? is there a sensible maximum?), recorded in `plan.md` section "Configuration Types Check". Numeric settings must declare an `AcceptableValueRange` (or `AcceptableValueList`), and code that uses a setting clamps it again at the point of use, because values also arrive from the network (host settings) or are computed. Run `RepoKit/scripts/check-config-types.ps1` (`external/RepoKit/scripts/...` inside a mod): it reports numeric settings without a range as errors, and `publish-mod` blocks a release while there are errors. A setting that really can be any number opts out with a `// config-range-ok: <reason>` comment.
 
 ## Commit and push policy
 

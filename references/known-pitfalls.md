@@ -105,6 +105,14 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Check:** destroy or break the held object while it is held (wear it out, use a debug command) and confirm the slot or list updates, listeners are notified and the key or action works again.
 - **Seen in:** Pockets with CharmCore (worn-out charm).
 
+## P-009: Numeric settings without limits accept values that make no sense
+
+- **Symptom:** a cooldown setting accepted negative numbers (and, with no maximum, absurd ones); the same kind of slip had already happened in several mods. Nothing fails at startup: a wrong value just produces odd behavior later, and a value sent by the host can bypass the limits of the local config file.
+- **Cause:** `ConfigFile.Bind` with a plain numeric default declares no valid values, and the type alone (`float`, `int`) allows negatives, zero and huge numbers.
+- **Avoid it:** analyse each setting when it is added (type, unit, valid values, what happens at 0 and at the extremes) and declare an `AcceptableValueRange` or `AcceptableValueList`; clamp again where the value is used, since it can also come from the network or a calculation.
+- **Check:** `RepoKit/scripts/check-config-types.ps1` (publish-mod runs it and blocks on errors); in game, put the extremes in the config file (negative, 0, huge) and confirm the mod behaves.
+- **Seen in:** several mods, most recently CharmCore (cooldown).
+
 ---
 
 ## Template for a new entry

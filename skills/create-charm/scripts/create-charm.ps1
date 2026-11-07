@@ -138,7 +138,8 @@ $map = @(
     @("qa-battery.md", "specs\$(Split-Path $featureDir -Leaf)\qa-battery.md"),
     @("__MOD__.Tests\__MOD__.Tests.csproj.tpl", "$modName.Tests\$modName.Tests.csproj"),
     @("__MOD__.Tests\GameContractTests.cs", "$modName.Tests\GameContractTests.cs"),
-    @("__MOD__.Tests\CharmRulesTests.cs", "$modName.Tests\CharmRulesTests.cs")
+    @("__MOD__.Tests\CharmRulesTests.cs", "$modName.Tests\CharmRulesTests.cs"),
+    @("__MOD__.Tests\ConfigRulesTests.cs", "$modName.Tests\ConfigRulesTests.cs")
 )
 foreach ($entry in $map) {
     $source = Join-Path $templateDir $entry[0]
