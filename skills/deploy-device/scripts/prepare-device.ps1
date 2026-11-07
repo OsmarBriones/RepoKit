@@ -85,6 +85,28 @@ if ($SeedProfile -and $status.r2modmanReady -and -not $status.bepInExPresent) {
     }
 }
 
+if ($SeedProfile -and $status.r2modmanReady -and -not $status.bepInExCached) {
+    $cacheSource = Join-Path $env:APPDATA 'r2modmanPlus-local\REPO\cache\BepInEx-BepInExPack'
+    if (Test-Path $cacheSource) {
+        Write-Host "Adding r2modman's BepInExPack package cache to the device (icon and files)..." -ForegroundColor Cyan
+        $cacheWork = Join-Path ([IO.Path]::GetTempPath()) ('repo-cache-' + [guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $cacheWork -Force | Out-Null
+        try {
+            Copy-Item -Path $cacheSource -Destination (Join-Path $cacheWork 'BepInEx-BepInExPack') -Recurse -Force
+            $cacheZip = Join-Path ([IO.Path]::GetTempPath()) 'cache-seed.zip'
+            if (Test-Path $cacheZip) { Remove-Item $cacheZip -Force }
+            Compress-Archive -Path (Join-Path $cacheWork '*') -DestinationPath $cacheZip -Force
+            Send-DeviceFile $device $cacheZip
+            $cacheResult = Invoke-DeviceScript $device 'seed-profile.ps1' @{ ProfileName = $device.ProfileName; ArchiveName = 'profile-seed.zip'; CacheArchiveName = 'cache-seed.zip' }
+            Write-Host ("  {0}" -f $cacheResult.message)
+        }
+        finally {
+            Remove-Item -Path $cacheWork -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        $status = Invoke-DeviceScript $device 'device-status.ps1' @{ ProfileName = $device.ProfileName }
+    }
+}
+
 function Show-Check([string]$label, [bool]$ok, [string]$detail) {
     $mark = if ($ok) { '[ok]  ' } else { '[todo]' }
     $color = if ($ok) { 'Green' } else { 'Yellow' }

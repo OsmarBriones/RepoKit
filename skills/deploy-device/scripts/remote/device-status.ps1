@@ -84,6 +84,7 @@ $result = [pscustomobject]@{
     profileDir     = $profileDir
     profileExists  = (Test-Path $profileDir)
     bepInExPresent = (Test-Path (Join-Path $profileDir 'BepInEx\core\BepInEx.dll'))
+    bepInExCached  = (Test-Path (Join-Path $env:APPDATA 'r2modmanPlus-local\REPO\cache\BepInEx-BepInExPack'))
     pluginsDir     = $pluginsDir
     plugins        = $plugins
     logPath        = (Join-Path $profileDir 'BepInEx\LogOutput.log')

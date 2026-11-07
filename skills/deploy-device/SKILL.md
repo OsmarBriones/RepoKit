@@ -87,7 +87,8 @@ It copies the device's `LogOutput.log` here, prints the matching lines and the s
 
 - **Verified on a real second machine (2026-11-06):** the registration code, the key-based SSH connection, `setup-device.ps1`, `prepare-device.ps1` (game and r2modman detection, profile creation with `-SeedProfile`), and `deploy-device.ps1` with hash verification (the deployed DLL hash matched the build). The first real run also exposed that Windows blocks unsigned scripts by default; remote scripts are now run through a child PowerShell with the execution policy bypassed for that process only.
 - **Verified only on the simulated device (`-Transport local`):** the config backup and the log fetch.
-- **Not yet verified:** that r2modman lists and launches a profile created by `-SeedProfile` (open r2modman on the device once and check); the winget install path when r2modman is missing; the `-Remove` undo.
+- **r2modman and a seeded profile (verified 2026-11-06 by screenshot):** r2modman lists the `Debug` profile and its BepInExPack entry. A seeded profile has no package cache on the device, so the entry showed a placeholder image; `-SeedProfile` now also copies the BepInExPack cache. Mods deployed by this skill are plain DLLs that BepInEx loads from the plugins folder: **r2modman does not list them** (it only lists what it installed itself), which is expected.
+- **Not yet verified:** that the game launches modded from that profile and loads the DLL (check the log with `get-device-log.ps1` after the first run); the winget install path when r2modman is missing; the `-Remove` undo.
 
 ## Testing the scripts without a second machine
 
