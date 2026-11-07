@@ -219,7 +219,14 @@ if (-not $SkipSpecKit) {
         }
 
         $psEngine = if (Get-Command pwsh -ErrorAction SilentlyContinue) { "pwsh" } else { "powershell" }
-        & $psEngine -ExecutionPolicy Bypass -File $specScript "$effectiveFeatureDesc" -ShortName "$effectiveShortName"
+        # Run from the new repository: the Spec-Kit script finds its repository from the current folder, so when this script was started inside
+        # another repository (for example while working on a sibling mod) it would write the feature folder there.
+        Push-Location $targetPath
+        try {
+            & $psEngine -ExecutionPolicy Bypass -File $specScript "$effectiveFeatureDesc" -ShortName "$effectiveShortName"
+        } finally {
+            Pop-Location
+        }
 
         # Ensure spec.md is populated with actual content (not raw placeholders)
         if ([string]::IsNullOrWhiteSpace($SpecMarkdownContent)) {
