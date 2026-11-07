@@ -39,6 +39,7 @@ REPO_Mods/
 │   │   ├── refine-mod-concept/ Cyclical concept refinement & scoping
 │   │   ├── create-mod/         Mod scaffolding, GitHub repo, submodules & Spec-Kit
 │   │   ├── develop-mod/        Autonomous Spec-Kit development loop & implementation
+│   │   ├── create-charm/       New Charm<Valuable> mod from the charm template (debug mode, rules test)
 │   │   └── deploy-device/      Deploy builds to another test machine over SSH and read its log
 │   ├── references/
 │   │   ├── item-prices.md      canonical item shop prices & economic reference (59+ items)
@@ -120,6 +121,11 @@ RepoKit provides shared skills to automate release packaging and asset preparati
 9. **`decompile-game` (`RepoKit/skills/decompile-game/SKILL.md`):**
    - Refreshes the decompiled game source after a R.E.P.O. update using `ilspycmd`, diffs it against the previous version and lists which Harmony-patched types in the mods changed.
    - Script: `powershell -ExecutionPolicy Bypass -File RepoKit/skills/decompile-game/scripts/decompile-game.ps1 [-DiffOnly]`
+
+11. **`create-charm` (`RepoKit/skills/create-charm/SKILL.md`):**
+   - **Every `Charm<Valuable>` mod is created with this skill, not with `create-mod`.** It runs `create-mod` and then applies the charm template, so the mod starts following the charm rules: derive from `CharmCore.Api.Charm` and register with `CharmsApi.Register` (this gives the `Debug.DebugMode` setting: off by default, it places the charm's valuable on the floor at the start of each level and enables the debug log lines); write debug detail only with `Charm.LogDebug`; depend on Pockets and CharmCore; document `DebugMode` in the README and start the QA battery with it; list the game members the effect uses in a contract test.
+   - The first four rules are enforced by `CharmRulesTests` (copied into each charm's test project): a charm that breaks one fails `dotnet test`. Never weaken those tests.
+   - Script: `RepoKit/skills/create-charm/scripts/create-charm.ps1 -Name <Valuable> -DisplayName ... -PrefabName ... -EffectName ... -EffectSummary ...`
 
 10. **`deploy-device` (`RepoKit/skills/deploy-device/SKILL.md`):**
    - Deploys mod builds to another Windows machine on the local network over key-based SSH, prepares it (r2modman, profile), verifies each file by hash and fetches its BepInEx log, so a tester only has to open the game. Devices are registered in a per-user file outside the repositories (`<user profile>\.repo-mods\devices.json`), and the one-time device setup is run by the human, as administrator, on the device.
