@@ -16,6 +16,7 @@ Every charm mod:
 3. **Depends on Pockets and CharmCore** in `manifest.json`, and is Category 2 (everyone installs).
 4. **Documents `DebugMode` and `SpawnNow` in `README.md`** and starts its **QA battery with a debug-mode quick start that mentions both**.
 5. **Uses `AddSetting` for any extra number** so the host's value applies to everyone.
+   **Continuous wear must be quiet:** a power that wears over time uses `Charm.WearForSeconds(Time.deltaTime)` (quiet by design) or, for host effects, `Charm.WearValuable(valuable, percent, quiet: true)`. The game plays a break sound, smoke and a floating number on every normal wear step, which would tick several times a second (found with the Glowing Jar). Normal (audible) wear is only for a use of the power.
 6. **Has a game-contract test** listing every game member its effect reads, writes or patches.
 
 Rules 1 to 4 are checked by `<Mod>.Tests/CharmRulesTests.cs`, and the configuration types rule (numeric settings need a value range) by `ConfigRulesTests.cs` (both copied from the template). The test runs with `dotnet test`, which is already part of the pre-release checks, so a charm that breaks a rule fails before it can ship. Do not delete or weaken those tests; fix the charm.

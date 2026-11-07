@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- `create-charm`: continuous wear must be quiet (`Charm.WearForSeconds`, or `WearValuable(..., quiet: true)` for host effects). Found with the Glowing Jar, whose per-second wear made the game's break sound tick all the time; CharmCore now applies continuous wear without the break sound, smoke and floating number.
+
 - Standardised the `Debug.SpawnNow` switch for every charm: CharmCore binds it with `DebugMode` and, while a level runs and `DebugMode` is on, places the charm's valuable near the player when it is turned on, then turns it off (the charm's config file is re-read about once a second, so editing the file or using an in-game config menu both work). The `create-charm` template (README, QA battery) and its `CharmRulesTests` now require `SpawnNow` to be documented, so new charms cannot skip it.
 
 - Fixed `create-mod.ps1` writing the Spec-Kit feature folder into whichever repository was the current folder when it ran (it now runs the Spec-Kit script from the new repository). Found while creating 17 charm repositories from inside a sibling repository.
