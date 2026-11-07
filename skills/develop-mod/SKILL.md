@@ -87,7 +87,9 @@ The agent carries **100% of the technical workload**. The human developer is a s
 5. **Known Pitfalls Check:**
    - Read `RepoKit/references/known-pitfalls.md` (`external/RepoKit/references/known-pitfalls.md` inside a mod).
    - For every entry, record in `plan.md` (section "Known Pitfalls Check") whether it is relevant and, if so, the safeguard the design uses.
-6. **Draft `plan.md`:**
+6. **Runtime Hygiene Check:**
+   - Review the design against `RepoKit/references/runtime-hygiene.md` (references released when the level ends, work throttled or event-driven, no allocations in hot paths, UI touched only on change, everything restored when the effect stops) and record each item in `plan.md` (section "Runtime Hygiene Check"). Repeat it before finishing: a change that adds a cache, a scan or a UI element reopens the relevant item.
+7. **Draft `plan.md`:**
    - Architecture & Data Flow.
    - Exact Harmony Hook signatures (`[HarmonyPatch(typeof(...), nameof(...))]`).
    - BepInEx Configuration structure.

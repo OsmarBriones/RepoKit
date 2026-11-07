@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added the **runtime hygiene check** (`references/runtime-hygiene.md`): a short review every mod passes before it is finished (references released when a level ends, work throttled or event-driven, no allocations in hot paths, UI touched only on change, everything restored when the effect stops). Wired into `REPO_MODS_WORKSPACE.md` (completion checklist item 8), `develop-mod`, the plan template ("Runtime Hygiene Check"), the tasks template (T013) and `create-charm`; new pitfall P-010. Charm mods get `Charm.OnLevelEnded` from CharmCore and two automatic tests in `CharmRulesTests` (no static field holding game objects, no scene-wide `Find...` calls; exceptions need `// hygiene-ok: <reason>`). Prompted by a native crash when leaving a level that could not be traced to a mod.
+
 - `create-charm`: continuous wear must be quiet (`Charm.WearForSeconds`, or `WearValuable(..., quiet: true)` for host effects). Found with the Glowing Jar, whose per-second wear made the game's break sound tick all the time; CharmCore now applies continuous wear without the break sound, smoke and floating number.
 
 - Standardised the `Debug.SpawnNow` switch for every charm: CharmCore binds it with `DebugMode` and, while a level runs and `DebugMode` is on, places the charm's valuable near the player when it is turned on, then turns it off (the charm's config file is re-read about once a second, so editing the file or using an in-game config menu both work). The `create-charm` template (README, QA battery) and its `CharmRulesTests` now require `SpawnNow` to be documented, so new charms cannot skip it.

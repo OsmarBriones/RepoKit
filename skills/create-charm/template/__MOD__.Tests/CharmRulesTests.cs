@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace __MOD__.Tests;
@@ -44,6 +45,54 @@ public class CharmRulesTests
 	}
 
 	[TestMethod]
+	public void Hygiene_NoStaticFieldHoldsAGameObject()
+	{
+		// Runtime hygiene (RepoKit/references/runtime-hygiene.md, item 1): a static field that holds a game object keeps pointing at it after
+		// the game destroys the level. Keep per-level state in the charm (cleared in OnLevelEnded) or hold ids. Deliberate exception:
+		// a "// hygiene-ok: <reason>" comment on the same or the previous line.
+		Regex staticField = new Regex(@"\bstatic\s+(?:readonly\s+)?(?<type>[\w<>\[\],\.\? ]+?)\s+\w+\s*(?:=|;|\{)");
+		Regex gameType = new Regex(@"\b(ValuableObject|PlayerAvatar|PlayerController|PlayerHealth|EnemyParent|Enemy|PhysGrabObject|PhysGrabber|PhysGrabCart|InventorySpot|TextMeshProUGUI|Image|GameObject|Transform|Component|MonoBehaviour|Camera)\b");
+		List<string> offenders = new List<string>();
+		foreach (string file in ModSources())
+		{
+			string[] lines = File.ReadAllLines(file);
+			for (int i = 0; i < lines.Length; i++)
+			{
+				Match match = staticField.Match(lines[i]);
+				if (!match.Success || !gameType.IsMatch(match.Groups["type"].Value) || HasOptOut(lines, i))
+				{
+					continue;
+				}
+
+				offenders.Add(Path.GetFileName(file) + ": " + lines[i].Trim());
+			}
+		}
+
+		Assert.AreEqual(0, offenders.Count, "Static fields that hold game objects (clear them in OnLevelEnded, hold ids, or justify with // hygiene-ok:):\n" + string.Join("\n", offenders));
+	}
+
+	[TestMethod]
+	public void Hygiene_NoFindCalls()
+	{
+		// Runtime hygiene, item 3: Find... calls scan every object in the scene. Use the game's own lists or find once and cache.
+		Regex find = new Regex(@"FindObjectsOfType|FindObjectOfType|FindObjectsByType|FindFirstObjectByType|GameObject\.Find\(");
+		List<string> offenders = new List<string>();
+		foreach (string file in ModSources())
+		{
+			string[] lines = File.ReadAllLines(file);
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (find.IsMatch(lines[i]) && !HasOptOut(lines, i))
+				{
+					offenders.Add(Path.GetFileName(file) + ": " + lines[i].Trim());
+				}
+			}
+		}
+
+		Assert.AreEqual(0, offenders.Count, "Scene-wide Find calls (use the game's lists or cache, or justify with // hygiene-ok:):\n" + string.Join("\n", offenders));
+	}
+
+	[TestMethod]
 	public void Manifest_DependsOnPocketsAndCharmCore()
 	{
 		string manifest = File.ReadAllText(Path.Combine(Root, "manifest.json"));
@@ -66,6 +115,11 @@ public class CharmRulesTests
 		Assert.IsTrue(batteries.Length > 0, "specs/<feature>/qa-battery.md is missing.");
 		Assert.IsTrue(batteries.Any(path => File.ReadAllText(path).Contains("DebugMode")), "The QA battery must explain how to test with DebugMode.");
 		Assert.IsTrue(batteries.Any(path => File.ReadAllText(path).Contains("SpawnNow")), "The QA battery must explain the Debug.SpawnNow switch.");
+	}
+
+	private static bool HasOptOut(string[] lines, int index)
+	{
+		return lines[index].Contains("hygiene-ok:") || (index > 0 && lines[index - 1].Contains("hygiene-ok:"));
 	}
 
 	private static IEnumerable<string> ModSources()

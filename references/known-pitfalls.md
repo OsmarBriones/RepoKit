@@ -113,6 +113,14 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Check:** `RepoKit/scripts/check-config-types.ps1` (publish-mod runs it and blocks on errors); in game, put the extremes in the config file (negative, 0, huge) and confirm the mod behaves.
 - **Seen in:** several mods, most recently CharmCore (cooldown).
 
+## P-010: Long-lived references and needless per-frame work make crashes and slowdowns possible and hard to trace
+
+- **Symptom:** the game crashed inside Unity's memory scan (`mono-2.0-bdwgc`, an access violation) right after leaving a level, with no managed error in the log. It could not be shown to be caused by the charm mods, and it did not repeat, but the mods did keep references to the destroyed level's objects until the next level started and recomputed text layout and scans every frame.
+- **Cause:** not proven. Long-lived references (static fields, caches, reused lists) to game objects are exactly what the memory scan walks when a level unloads, and per-frame allocation and UI rebuilds raise memory pressure; either can make a rare engine or mod bug more likely and a trace impossible.
+- **Avoid it:** the runtime hygiene check (`references/runtime-hygiene.md`): clear per-level state when the level ends, empty reused buffers, throttle scans, cache calculations by their inputs, touch UI only when it changed, allocate nothing in hot paths.
+- **Check:** review each mod against the checklist (`plan.md` "Runtime Hygiene Check"); charm mods also run the hygiene tests in `CharmRulesTests`. In game: leave levels many times in one session after using the mod heavily and watch the log for native crashes.
+- **Seen in:** the charm mods (Glowing Jar, CharmCore's cooldown view).
+
 ---
 
 ## Template for a new entry
