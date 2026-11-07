@@ -97,6 +97,14 @@ Entry fields: **Symptom** (what the player or developer saw), **Cause** (what we
 - **Check:** switch the mod off in game with state held (valuables in pockets, an active effect) and confirm everything is returned intact and normal vanilla behavior resumes.
 - **Seen in:** Pockets. Applies to CharmCore and any mod with persistent effects.
 
+## P-008: An object destroyed while a mod holds it leaves stale state and UI behind
+
+- **Symptom:** a valuable worn out inside a pocket was destroyed by the game, but its slot kept drawing the old picture and pressing the key did nothing, so it looked stuck. The log showed nothing: the registry had been cleaned silently while the screen and the other mods were never told.
+- **Cause:** the mod cleaned its own registry in `OnDestroy` but raised no event and did not refresh the UI. Anything that is hidden, parked or tracked by a mod can be destroyed by the game or by another mod at any time, and the UI is only redrawn when something asks it to.
+- **Avoid it:** wherever a mod holds game objects, handle their destruction like any other exit path: free the state, raise the same "removed" event, and redraw the UI that shows it (guard against the scene unloading).
+- **Check:** destroy or break the held object while it is held (wear it out, use a debug command) and confirm the slot or list updates, listeners are notified and the key or action works again.
+- **Seen in:** Pockets with CharmCore (worn-out charm).
+
 ---
 
 ## Template for a new entry
